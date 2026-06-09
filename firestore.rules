@@ -1,0 +1,236 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isGeneralUser() {
+      return isAuthenticated() && getUserData().role == 'general';
+    }
+
+    function isViewAdmin() {
+      return isAuthenticated() && getUserData().role == 'viewAdmin';
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserData().role == 'superAdmin';
+    }
+
+    function isAdmin() {
+      return isViewAdmin() || isSuperAdmin();
+    }
+
+    function canRead() {
+      return isAuthenticated();
+    }
+
+    // Any authenticated user can create their own data
+    function canWrite() {
+      return isAuthenticated();
+    }
+
+    // Owner of the document OR SuperAdmin can update
+    function canUpdateOwned(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    // Owner of the document OR SuperAdmin can delete
+    function canDeleteOwned(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    // =========================================================================
+    // USERS
+    // =========================================================================
+
+    match /users/{userId} {
+      allow read:   if isOwner(userId) || isAdmin();
+      allow create: if (isAuthenticated() && isOwner(userId)) || isSuperAdmin();
+      // Owner can update their own profile; SuperAdmin can update anything (including role)
+      allow update: if isOwner(userId) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // =========================================================================
+    // TRANSACTIONS  (cashbook)
+    // =========================================================================
+
+    match /transactions/{transactionId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.type in ['income', 'expense']
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.businessUnit is string
+        && request.resource.data.category   is string
+        && request.resource.data.paymentMethod is string;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // =========================================================================
+    // INVENTORY
+    // =========================================================================
+
+    match /inventory/{itemId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /stockMovements/{movementId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // =========================================================================
+    // FARMING  — Dairy, Crops, Livestock, Poultry
+    // =========================================================================
+
+    match /dairy/{dairyId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /crops/{cropId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /livestock/{livestockId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /poultryLayers/{layersId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // farmDailyRecords — production + sales records for all farming types
+    match /farmDailyRecords/{recordId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.farmingType in ['dairy', 'crops', 'livestock', 'poultry']
+        && request.resource.data.productionQty is number
+        && request.resource.data.soldQty      is number
+        && request.resource.data.pricePerUnit is number
+        && request.resource.data.totalAmount  is number;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // =========================================================================
+    // CONTRACTS  +  paymentMilestones
+    // =========================================================================
+
+    match /contracts/{contractId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /paymentMilestones/{milestoneId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // =========================================================================
+    // PROPERTY  +  rentalUnits
+    // =========================================================================
+
+    match /properties/{propertyId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /rentalUnits/{unitId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // =========================================================================
+    // TRANSPORT  +  transportExpenses
+    // =========================================================================
+
+    match /vehicles/{vehicleId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /transportExpenses/{expenseId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    // =========================================================================
+    // REPORTS  &  ANALYTICS
+    // =========================================================================
+
+    match /reports/{reportId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+
+    match /analytics/{analyticsId} {
+      allow read:   if canRead();
+      allow create: if canWrite()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if canUpdateOwned(resource.data.userId);
+      allow delete: if canDeleteOwned(resource.data.userId);
+    }
+  }
+}

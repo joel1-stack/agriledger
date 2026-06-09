@@ -1,0 +1,29 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "agri-ledger-c427d",
+          "appId": "1:522942087181:android:dbefc4e562f60769d4d544",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "agri-ledger-c427d",
+          "configurations": {
+            "android": "1:522942087181:android:dbefc4e562f60769d4d544",
+            "ios": "1:522942087181:ios:241b366c7d0ccbcad4d544",
+            "macos": "1:522942087181:ios:241b366c7d0ccbcad4d544",
+            "web": "1:522942087181:web:0b181a0a0f456b08d4d544",
+            "windows": "1:522942087181:web:9de97cd0ad9aba20d4d544"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

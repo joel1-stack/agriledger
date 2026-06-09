@@ -1,0 +1,83 @@
+﻿name: agri_ledger
+description: Poultry Farm Management System — Layers, Broilers & Kienyeji
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.9.2 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase - Keep your current versions (they're fine)
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+
+  # State Management
+  provider: ^6.1.5+1
+
+  # Utilities
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  share_plus: ^12.0.1
+  file_picker: ^10.3.10  # CHANGED: Upgraded from 5.5.0 to fix Java compilation error
+
+  # PDF & Printing
+  pdf: ^3.11.3
+  printing: ^5.14.2
+
+  # Excel Export
+  excel: ^4.0.6  # Keep as is
+
+  # Charts
+  fl_chart: ^1.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# App icon configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/appicon.jpg"
+  min_sdk_android: 21
+  adaptive_icon_background: "#1B8A3C"
+  adaptive_icon_foreground: "assets/images/appicon.jpg"
+  web:
+    generate: false
+  windows:
+    generate: false
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/fonts/  # ADDED: fonts folder for proper asset loading
+
+  fonts:
+    - family: MatheloSans  # CHANGED: Matched to your font family name
+      fonts:
+        - asset: assets/fonts/mathelo-regular.otf
+          weight: 400
+        - asset: assets/fonts/mathelo-bold.otf
+          weight: 700
+        - asset: assets/fonts/mathelo-light.otf
+          weight: 300
+    - family: Stara
+      fonts:
+        - asset: assets/fonts/Stara-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Stara-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Stara-Bold.otf
+          weight: 700
+        - asset: assets/fonts/Stara-ExtraBold.otf
+          weight: 800
+        - asset: assets/fonts/Stara-Black.otf
+          weight: 900

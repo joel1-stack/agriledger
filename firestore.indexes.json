@@ -1,0 +1,192 @@
+{
+  "indexes": [
+
+    { "collectionGroup": "transactions", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "transactions", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "businessUnit", "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "transactions", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type",      "order": "ASCENDING"  },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "transactions", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "businessUnit", "order": "ASCENDING"  },
+        { "fieldPath": "type",         "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "inventory", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",      "order": "ASCENDING"  },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "inventory", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category",    "order": "ASCENDING"  },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "inventory", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",      "order": "ASCENDING"  },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "inventory", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",       "order": "ASCENDING" },
+        { "fieldPath": "quantity",     "order": "ASCENDING" },
+        { "fieldPath": "reorderLevel", "order": "ASCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "stockMovements", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "stockMovements", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "itemId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "dairy", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "crops", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "crops", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "crops", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "season",       "order": "ASCENDING" },
+        { "fieldPath": "harvestMonth", "order": "ASCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "livestock", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "livestock", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "livestockType", "order": "ASCENDING" },
+        { "fieldPath": "status",        "order": "ASCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "poultryLayers", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "farmDailyRecords", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING"  },
+        { "fieldPath": "date",   "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "farmDailyRecords", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",      "order": "ASCENDING"  },
+        { "fieldPath": "farmingType", "order": "ASCENDING"  },
+        { "fieldPath": "date",        "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "contracts", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "contracts", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "paymentMilestones", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "contractId", "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "properties", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "rentalUnits", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "propertyId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt",  "order": "ASCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "vehicles", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "transportExpenses", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "vehicleId", "order": "ASCENDING"  },
+        { "fieldPath": "date",      "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "reports", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "analytics", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+
+  ],
+  "fieldOverrides": []
+}

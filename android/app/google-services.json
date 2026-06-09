@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522942087181",
+    "project_id": "agri-ledger-c427d",
+    "storage_bucket": "agri-ledger-c427d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522942087181:android:dbefc4e562f60769d4d544",
+        "android_client_info": {
+          "package_name": "com.example.agri_ledger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0wr-26_FkOrLUcxjeYoAKHH43-htGoyw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
