@@ -42,12 +42,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyBs2IsJokhKzsH51XkXD6CUMQOsp1LNJB8',
-    appId: '1:522942087181:web:0b181a0a0f456b08d4d544',
+    appId: '1:522942087181:web:9de97cd0ad9aba20d4d544',
     messagingSenderId: '522942087181',
     projectId: 'agri-ledger-c427d',
     authDomain: 'agri-ledger-c427d.firebaseapp.com',
     storageBucket: 'agri-ledger-c427d.firebasestorage.app',
-    measurementId: 'G-DFNS0P5WMH',
+    measurementId: 'G-BQLWN81N3X',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
