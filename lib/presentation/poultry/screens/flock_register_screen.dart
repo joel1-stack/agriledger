@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../state/poultry/poultry_provider.dart';
 import '../../../data/models/poultry/flock_batch.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/poultry_constants.dart';
 
 import '../widgets/poultry_drawer.dart';
 class FlockRegisterScreen extends StatelessWidget {
@@ -118,4 +117,5 @@ class FlockRegisterScreen extends StatelessWidget {
     );
   }
 }
+
 

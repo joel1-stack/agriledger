@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../state/poultry/poultry_provider.dart';
 import '../../../data/models/poultry/poultry_sale.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/poultry_constants.dart';
 
 import '../widgets/poultry_drawer.dart';
 class SalesScreen extends StatelessWidget {
@@ -98,4 +97,5 @@ class SalesScreen extends StatelessWidget {
     );
   }
 }
+
 

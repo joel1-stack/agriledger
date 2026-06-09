@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../state/poultry/poultry_provider.dart';
 import '../../../data/models/poultry/farm_config.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/poultry_constants.dart';
 
 import '../widgets/poultry_drawer.dart';
 class FarmConfigScreen extends StatefulWidget {
@@ -182,4 +181,5 @@ class _FarmConfigScreenState extends State<FarmConfigScreen> {
     );
   }
 }
+
 
