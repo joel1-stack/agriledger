@@ -48,18 +48,21 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _loadUserData(String uid) async {
     try {
-      _userModel = await _authRepo.getUserData(uid);
-      if (_userModel == null) {
-        _error = 'User data not found';
-        _status = AuthStatus.unauthenticated;
-      } else {
+      final userData = await _authRepo.getUserData(uid);
+      if (userData != null) {
+        _userModel = userData;
         final token = await NotificationService().getToken();
         if (token != null) {
           await _authRepo.updateFcmToken(uid, token);
         }
+      } else if (_userModel == null) {
+        _error = 'User data not found';
+        _status = AuthStatus.unauthenticated;
       }
     } catch (e) {
-      _error = 'Failed to load user data';
+      if (_userModel == null) {
+        _error = 'Failed to load user data';
+      }
       debugPrint('AuthProvider._loadUserData error: $e');
     }
   }
@@ -68,8 +71,11 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true; _error = null; notifyListeners();
     try {
       await _authRepo.signInWithEmailAndPassword(email, password);
+      if (_firebaseUser != null) {
+        await _loadUserData(_firebaseUser!.uid);
+      }
       _isLoading = false; notifyListeners();
-      return true;
+      return _userModel != null;
     } on FirebaseAuthException catch (e) {
       _error = _handleAuthError(e);
     } catch (e) {
@@ -82,7 +88,16 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> signUp(String email, String password, String name, {String role = 'general'}) async {
     _isLoading = true; _error = null; notifyListeners();
     try {
-      await _authRepo.createUserWithEmailAndPassword(email, password, name, role: role);
+      final cred = await _authRepo.createUserWithEmailAndPassword(email, password, name, role: role);
+      _userModel = UserModel(
+        id: cred.user!.uid,
+        email: email,
+        name: name,
+        role: role,
+        createdAt: DateTime.now(),
+      );
+      _status = AuthStatus.authenticated;
+      _firebaseUser = cred.user;
       _isLoading = false; notifyListeners();
       return true;
     } on FirebaseAuthException catch (e) {
