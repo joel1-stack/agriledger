@@ -3,6 +3,5 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "buildCommand": "flutter build web --release",
-  "outputDirectory": "build/web",
-  "framework": "flutter"
+  "outputDirectory": "build/web"
 }
