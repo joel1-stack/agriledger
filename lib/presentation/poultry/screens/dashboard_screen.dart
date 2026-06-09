@@ -15,7 +15,7 @@ class DashboardScreen extends StatelessWidget {
     final poultry = Provider.of<PoultryProvider>(context);
     final user = auth.userModel;
     final isSuperAdmin = auth.isSuperAdmin;
-    final isViewAdmin = auth.isViewAdmin;
+    final isViewAdmin = auth.isManager;
     final canEdit = isSuperAdmin;
 
     return Scaffold(

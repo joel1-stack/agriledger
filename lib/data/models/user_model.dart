@@ -4,35 +4,75 @@ class UserModel {
   final String id;
   final String email;
   final String name;
-  final String role; // 'general', 'viewAdmin', 'superAdmin'
-  final DateTime createdAt;
-  final String? farmUnit;
+  final String role; // super_admin | manager | worker
+  final List<String> assignedFlocks;
+  final bool isActive;
   final String? phone;
-  final String? photoUrl;
+  final String? fcmToken;
+  final DateTime createdAt;
 
-  UserModel({required this.id, required this.email, required this.name, required this.role, required this.createdAt, this.farmUnit, this.phone, this.photoUrl});
+  UserModel({
+    required this.id,
+    required this.email,
+    required this.name,
+    required this.role,
+    this.assignedFlocks = const [],
+    this.isActive = true,
+    this.phone,
+    this.fcmToken,
+    required this.createdAt,
+  });
 
-  bool get isSuperAdmin => role == 'superAdmin';
-  bool get isViewAdmin => role == 'viewAdmin';
-  bool get isGeneralUser => role == 'general';
-  bool get isAdmin => isSuperAdmin || isViewAdmin;
-  bool get isViewer => isViewAdmin || isSuperAdmin;
+  bool get isSuperAdmin => role == 'super_admin';
+  bool get isManager => role == 'manager';
+  bool get isWorker => role == 'worker';
+  bool get canAddEdit => isManager || isWorker;
+  bool get canApprove => isManager;
+  bool get canManageUsers => isSuperAdmin;
 
   Map<String, dynamic> toFirestore() => {
-    'email': email, 'name': name, 'role': role, 'createdAt': Timestamp.fromDate(createdAt),
-    'farmUnit': farmUnit, 'phone': phone, 'photoUrl': photoUrl,
+    'email': email,
+    'name': name,
+    'role': role,
+    'assignedFlocks': assignedFlocks,
+    'isActive': isActive,
+    'phone': phone,
+    'fcmToken': fcmToken,
+    'createdAt': Timestamp.fromDate(createdAt),
   };
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final m = doc.data() as Map<String, dynamic>? ?? {};
     return UserModel(
-      id: doc.id, email: m['email'] ?? '', name: m['name'] ?? '', role: m['role'] ?? 'general',
+      id: doc.id,
+      email: m['email'] ?? '',
+      name: m['name'] ?? '',
+      role: m['role'] ?? 'worker',
+      assignedFlocks: List<String>.from(m['assignedFlocks'] ?? []),
+      isActive: m['isActive'] ?? true,
+      phone: m['phone'],
+      fcmToken: m['fcmToken'],
       createdAt: (m['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      farmUnit: m['farmUnit'], phone: m['phone'], photoUrl: m['photoUrl'],
     );
   }
 
-  UserModel copyWith({String? name, String? role, String? farmUnit, String? phone, String? photoUrl}) =>
-    UserModel(id: id, email: email, name: name ?? this.name, role: role ?? this.role, createdAt: createdAt,
-      farmUnit: farmUnit ?? this.farmUnit, phone: phone ?? this.phone, photoUrl: photoUrl ?? this.photoUrl);
+  UserModel copyWith({
+    String? name,
+    String? role,
+    List<String>? assignedFlocks,
+    bool? isActive,
+    String? phone,
+    String? fcmToken,
+  }) =>
+      UserModel(
+        id: id,
+        email: email,
+        name: name ?? this.name,
+        role: role ?? this.role,
+        assignedFlocks: assignedFlocks ?? this.assignedFlocks,
+        isActive: isActive ?? this.isActive,
+        phone: phone ?? this.phone,
+        fcmToken: fcmToken ?? this.fcmToken,
+        createdAt: createdAt,
+      );
 }

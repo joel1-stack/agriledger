@@ -270,4 +270,65 @@ class PoultryProvider extends ChangeNotifier {
     _assetsSub?.cancel();
     super.dispose();
   }
+
+  // ── Unified Record Methods (for SheetScreen) ─────────────────────────────
+
+  /// Combines all poultry data into a unified list with birdType, sheetType, status
+  List<Map<String, dynamic>> get allRecords {
+    final records = <Map<String, dynamic>>[];
+
+    for (final e in _production) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'eggs'..['status'] = 'approved');
+    }
+    for (final e in _sales) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'sales'..['status'] = 'approved');
+    }
+    for (final e in _otherIncome) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'other_income'..['status'] = 'approved');
+    }
+    for (final e in _feedExpenses) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'feed'..['status'] = 'approved');
+    }
+    for (final e in _vetHealth) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'vet'..['status'] = 'approved');
+    }
+    for (final e in _mortality) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'mortality'..['status'] = 'approved');
+    }
+    for (final e in _housing) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'housing'..['status'] = 'approved');
+    }
+    for (final e in _labour) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'labour'..['status'] = 'approved');
+    }
+    for (final e in _overheads) {
+      records.add(e.toMap()..['birdType'] = 'layers'..['sheetType'] = 'overheads'..['status'] = 'approved');
+    }
+
+    return records;
+  }
+
+  /// Batches as maps for worker dashboard
+  List<Map<String, dynamic>> get flocks {
+    return _batches.map((b) => b.toMap()).toList();
+  }
+
+  /// Add a new record to Firestore
+  Future<void> addRecord(Map<String, dynamic> data) async {
+    final sheetType = data['sheetType'] ?? 'feed';
+    await _repo.addRecord(sheetType, data);
+    // Provider will auto-refresh via stream subscription
+  }
+
+  /// Update a record's approval status
+  Future<void> updateRecordStatus(String id, String status, {String? rejectionReason}) async {
+    // This updates the status in Firestore
+    // In a real implementation, we'd find the right collection and update
+    debugPrint('Update record $id to $status (reason: $rejectionReason)');
+    // Since we have multiple collections, we update in all records
+    await _repo.updateRecordStatus(id, status, rejectionReason: rejectionReason);
+  }
+
+  int get totalMortality => _mortality.fold(0, (sum, m) => sum + m.deaths);
+
 }

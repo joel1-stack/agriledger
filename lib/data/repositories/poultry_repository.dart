@@ -267,4 +267,43 @@ class PoultryRepository {
 
   Future<void> deleteAsset(String id) =>
       _db.collection('poultryAssets').doc(id).delete();
+
+  // ── Dynamic Record Methods (for SheetScreen) ────────────────────────────
+
+  static const Map<String, String> _sheetCollections = {
+    'feed': 'poultryFeedExpenses',
+    'mortality': 'poultryMortality',
+    'eggs': 'poultryProduction',
+    'weight': 'poultryProduction',
+    'vet': 'poultryVetHealth',
+    'sales': 'poultrySales',
+    'labour': 'poultryLabour',
+    'housing': 'poultryHousing',
+    'overheads': 'poultryOverheads',
+    'other_income': 'poultryOtherIncome',
+    'inventory': 'poultryInventory',
+    'assets': 'poultryAssets',
+  };
+
+  Future<void> addRecord(String sheetType, Map<String, dynamic> data) async {
+    final collection = _sheetCollections[sheetType] ?? 'poultryFeedExpenses';
+    final ref = _db.collection(collection).doc();
+    data['id'] = ref.id;
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await ref.set(data);
+  }
+
+  Future<void> updateRecordStatus(String id, String status, {String? rejectionReason}) async {
+    final batch = _db.batch();
+    for (final col in _sheetCollections.values.toSet()) {
+      final ref = _db.collection(col).doc(id);
+      batch.update(ref, {
+        'status': status,
+        if (rejectionReason != null) 'rejectionReason': rejectionReason,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+  }
 }

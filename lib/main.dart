@@ -8,29 +8,26 @@ import 'core/theme/app_theme.dart';
 
 import 'state/auth/auth_provider.dart';
 import 'state/poultry/poultry_provider.dart';
+import 'services/notification_service.dart';
+
 import 'presentation/auth/screens/splash_screen.dart';
 import 'presentation/auth/screens/login_screen.dart';
 import 'presentation/auth/screens/register_screen.dart';
 
 import 'presentation/poultry/screens/dashboard_screen.dart';
-import 'presentation/poultry/screens/farm_config_screen.dart';
+import 'presentation/poultry/screens/sheet_screen.dart';
 import 'presentation/poultry/screens/flock_register_screen.dart';
-import 'presentation/poultry/screens/production_log_screen.dart';
-import 'presentation/poultry/screens/sales_screen.dart';
-import 'presentation/poultry/screens/other_income_screen.dart';
-import 'presentation/poultry/screens/feed_expenses_screen.dart';
-import 'presentation/poultry/screens/feed_consumption_screen.dart';
-import 'presentation/poultry/screens/vet_health_screen.dart';
-import 'presentation/poultry/screens/mortality_log_screen.dart';
-import 'presentation/poultry/screens/housing_expenses_screen.dart';
-import 'presentation/poultry/screens/labour_screen.dart';
-import 'presentation/poultry/screens/overheads_screen.dart';
-import 'presentation/poultry/screens/batch_performance_screen.dart';
-import 'presentation/poultry/screens/inventory_screen.dart';
-import 'presentation/poultry/screens/monthly_summary_screen.dart';
-import 'presentation/poultry/screens/annual_pl_screen.dart';
-import 'presentation/poultry/screens/asset_register_screen.dart';
-import 'presentation/poultry/screens/user_manual_screen.dart';
+
+import 'presentation/admin/admin_dashboard.dart';
+import 'presentation/admin/user_management_screen.dart';
+import 'presentation/admin/reports_screen.dart';
+
+import 'presentation/worker/worker_dashboard.dart';
+import 'presentation/worker/history_screen.dart';
+import 'presentation/poultry/screens/add_record_sheet.dart';
+
+import 'presentation/approvals/approval_queue_screen.dart';
+import 'presentation/poultry/widgets/poultry_drawer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +52,8 @@ void main() async {
     persistenceEnabled: true,
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
+
+  await NotificationService.init();
 
   runApp(const PoultryApp());
 }
@@ -82,6 +81,8 @@ class PoultryApp extends StatelessWidget {
   Route<dynamic> _generateRoute(RouteSettings settings) {
     Widget page;
 
+    final args = settings.arguments as Map<String, dynamic>? ?? {};
+
     switch (settings.name) {
       case '/':
         page = const SplashScreen();
@@ -93,63 +94,49 @@ class PoultryApp extends StatelessWidget {
         page = const RegisterScreen();
         break;
 
-      // ── Poultry Screens ──────────────────────────────
+      // ── Role-based Dashboards ──
       case '/dashboard':
-        page = const DashboardScreen();
+        page = _RoleRouter();
         break;
-      case '/farm-config':
-        page = const FarmConfigScreen();
+      case '/admin/dashboard':
+        page = const AdminDashboard();
         break;
+      case '/admin/users':
+        page = const UserManagementScreen();
+        break;
+      case '/admin/reports':
+        page = const ReportsScreen();
+        break;
+
+      case '/manager/approvals':
+        page = const ApprovalQueueScreen();
+        break;
+
+      case '/worker/dashboard':
+        page = const WorkerDashboard();
+        break;
+      case '/worker/add':
+        page = const WorkerDashboard();
+        break;
+      case '/worker/history':
+        page = const HistoryScreen();
+        break;
+      case '/worker/notifications':
+        page = const HistoryScreen();
+        break;
+
+      // ── Sheets (Excel-like data view for all roles) ──
+      case '/sheets':
+        page = SheetScreen(
+          birdType: args['birdType'] ?? 'layers',
+          initialSheet: args['initialSheet'] ?? 'feed',
+          flockId: args['flockId'],
+        );
+        break;
+
+      // ── Legacy screens ──
       case '/flock-register':
         page = const FlockRegisterScreen();
-        break;
-      case '/production-log':
-        page = const ProductionLogScreen();
-        break;
-      case '/sales':
-        page = const SalesScreen();
-        break;
-      case '/other-income':
-        page = const OtherIncomeScreen();
-        break;
-      case '/feed-expenses':
-        page = const FeedExpensesScreen();
-        break;
-      case '/feed-consumption':
-        page = const FeedConsumptionScreen();
-        break;
-      case '/vet-health':
-        page = const VetHealthScreen();
-        break;
-      case '/mortality-log':
-        page = const MortalityLogScreen();
-        break;
-      case '/housing-expenses':
-        page = const HousingExpensesScreen();
-        break;
-      case '/labour':
-        page = const LabourScreen();
-        break;
-      case '/overheads':
-        page = const OverheadsScreen();
-        break;
-      case '/batch-performance':
-        page = const BatchPerformanceScreen();
-        break;
-      case '/inventory':
-        page = const InventoryScreen();
-        break;
-      case '/monthly-summary':
-        page = const MonthlySummaryScreen();
-        break;
-      case '/annual-pl':
-        page = const AnnualPLScreen();
-        break;
-      case '/asset-register':
-        page = const AssetRegisterScreen();
-        break;
-      case '/user-manual':
-        page = const UserManualScreen();
         break;
 
       default:
@@ -172,6 +159,18 @@ class PoultryApp extends StatelessWidget {
       },
       transitionDuration: const Duration(milliseconds: 280),
     );
+  }
+}
+
+/// Routes to the correct dashboard based on user role
+class _RoleRouter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    if (!auth.isAuthenticated) return const LoginScreen();
+    if (auth.isSuperAdmin) return const AdminDashboard();
+    if (auth.isManager) return const ApprovalQueueScreen();
+    return const WorkerDashboard();
   }
 }
 

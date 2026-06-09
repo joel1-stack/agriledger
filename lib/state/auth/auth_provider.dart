@@ -24,11 +24,12 @@ class AuthProvider extends ChangeNotifier {
   String get userId => _firebaseUser?.uid ?? '';
   String get userEmail => _firebaseUser?.email ?? '';
   String get displayName => _userModel?.name ?? _firebaseUser?.displayName ?? 'User';
-  String get userRole => _userModel?.role ?? 'general';
+  String get userRole => _userModel?.role ?? 'worker';
   bool get isSuperAdmin => _userModel?.isSuperAdmin ?? false;
-  bool get isViewAdmin => _userModel?.isViewAdmin ?? false;
-  bool get isGeneralUser => _userModel?.isGeneralUser ?? true;
-
+  bool get isManager => _userModel?.isManager ?? false;
+  bool get isWorker => _userModel?.isWorker ?? false;
+  bool get canAddEdit => _userModel?.canAddEdit ?? false;
+  bool get canApprove => _userModel?.canApprove ?? false;
   AuthProvider() {
     _authRepo.authStateChanges.listen((user) async {
       _firebaseUser = user;
