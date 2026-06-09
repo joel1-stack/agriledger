@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/role_guard.dart';
 import '../../state/poultry/poultry_provider.dart';
 import '../../state/auth/auth_provider.dart';
-import '../../config/sheet_config.dart';
 import '../poultry/widgets/poultry_drawer.dart';
 
 class WorkerDashboard extends StatelessWidget {
@@ -163,3 +161,4 @@ class WorkerDashboard extends StatelessWidget {
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 }
+

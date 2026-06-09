@@ -60,7 +60,7 @@ class SpreadsheetTable extends StatelessWidget {
           if (showApproval) const DataColumn(label: Text('Action', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
         ],
         rows: rows.asMap().entries.map((entry) {
-          final i = entry.key;
+          
           final row = entry.value;
           final status = row['status'] ?? 'pending';
           return DataRow(

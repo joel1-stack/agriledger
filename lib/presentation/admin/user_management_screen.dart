@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../state/auth/auth_provider.dart';
-import '../../data/models/user_model.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -207,3 +206,4 @@ class _UserCard extends StatelessWidget {
     );
   }
 }
+

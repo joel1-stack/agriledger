@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,7 +14,6 @@ import 'presentation/auth/screens/splash_screen.dart';
 import 'presentation/auth/screens/login_screen.dart';
 import 'presentation/auth/screens/register_screen.dart';
 
-import 'presentation/poultry/screens/dashboard_screen.dart';
 import 'presentation/poultry/screens/sheet_screen.dart';
 import 'presentation/poultry/screens/flock_register_screen.dart';
 
@@ -24,10 +23,8 @@ import 'presentation/admin/reports_screen.dart';
 
 import 'presentation/worker/worker_dashboard.dart';
 import 'presentation/worker/history_screen.dart';
-import 'presentation/poultry/screens/add_record_sheet.dart';
 
 import 'presentation/approvals/approval_queue_screen.dart';
-import 'presentation/poultry/widgets/poultry_drawer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,7 +91,7 @@ class PoultryApp extends StatelessWidget {
         page = const RegisterScreen();
         break;
 
-      // ── Role-based Dashboards ──
+      // -- Role-based Dashboards --
       case '/dashboard':
         page = _RoleRouter();
         break;
@@ -125,7 +122,7 @@ class PoultryApp extends StatelessWidget {
         page = const HistoryScreen();
         break;
 
-      // ── Sheets (Excel-like data view for all roles) ──
+      // -- Sheets (Excel-like data view for all roles) --
       case '/sheets':
         page = SheetScreen(
           birdType: args['birdType'] ?? 'layers',
@@ -134,7 +131,7 @@ class PoultryApp extends StatelessWidget {
         );
         break;
 
-      // ── Legacy screens ──
+      // -- Legacy screens --
       case '/flock-register':
         page = const FlockRegisterScreen();
         break;
@@ -209,3 +206,4 @@ class _NotFoundScreen extends StatelessWidget {
     );
   }
 }
+

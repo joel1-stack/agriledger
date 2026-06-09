@@ -105,20 +105,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                 ),
-                // Nature image overlay
-                Image.network(
-                  'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&q=60&fit=crop',
-                  cacheWidth: 800,
-                  cacheHeight: 800,
-                  fit: BoxFit.cover,
-                  color: const Color(0xFF0D5C26).withOpacity(0.65),
-                  colorBlendMode: BlendMode.multiply,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return const SizedBox.shrink();
-                  },
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
+                Container(color: const Color(0xFF0D5C26)),
               ],
             ),
           ),

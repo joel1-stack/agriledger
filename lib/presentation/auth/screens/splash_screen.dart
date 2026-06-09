@@ -156,22 +156,9 @@ class _SplashScreenState extends State<SplashScreen>
               // ── Tiny decorative leaf icons ──
               ..._buildLeafDecorations(),
 
-              // ── Online Agriculture Image Overlay ──
+              // ── Background overlay ──
               Positioned.fill(
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=800&q=60&fit=crop',
-                  cacheWidth: 800,
-                  cacheHeight: 800,
-                  fit: BoxFit.cover,
-                  color: const Color(0xFF0A3D1F).withOpacity(0.55),
-                  colorBlendMode: BlendMode.multiply,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const SizedBox.shrink();
-                  },
-                  errorBuilder: (context, error, stackTrace) =>
-                  const SizedBox.shrink(),
-                ),
+                child: Container(color: const Color(0xFF0A3D1F)),
               ),
 
               // ── Center Content ──

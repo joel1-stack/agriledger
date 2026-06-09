@@ -126,19 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                 ),
-                Image.network(
-                  'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&q=60&fit=crop',
-                  cacheWidth: 800,
-                  cacheHeight: 800,
-                  fit: BoxFit.cover,
-                  color: const Color(0xFF0D5C26).withOpacity(0.6),
-                  colorBlendMode: BlendMode.multiply,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return const SizedBox.shrink();
-                  },
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
+                Container(color: const Color(0xFF0D5C26)),
               ],
             ),
           ),

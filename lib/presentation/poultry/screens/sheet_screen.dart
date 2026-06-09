@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/role_guard.dart';
 import '../../../state/poultry/poultry_provider.dart';
@@ -455,3 +454,4 @@ class _RecordDetailSheet extends StatelessWidget {
 
   String _fmt(double v) => v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toStringAsFixed(0);
 }
+

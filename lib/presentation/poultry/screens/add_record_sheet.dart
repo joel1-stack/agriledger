@@ -275,14 +275,15 @@ class _AddRecordSheetState extends State<AddRecordSheet> {
   void _autoCalculateFields(Map<String, dynamic> data) {
     final qty = (data['qtyKg'] ?? data['qty'] ?? data['birdsSold'] ?? data['eggsCollected'] ?? 0) as num;
     final price = (data['costPerKg'] ?? data['unitPrice'] ?? data['pricePerKg'] ?? data['rate'] ?? data['unitCost'] ?? 0) as num;
-    if (qty is num && price is num) {
+    if (true) {
       data['total'] = qty * price;
     }
     final eggs = (data['totalEggs'] ?? data['eggsCollected'] ?? 0) as num;
-    if (eggs is num && eggs > 0) {
+    if (eggs > 0) {
       data['trays'] = eggs / 30;
     }
   }
 
   String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 }
+
