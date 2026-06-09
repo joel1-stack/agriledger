@@ -16,7 +16,7 @@ class DashboardScreen extends StatelessWidget {
     final user = auth.userModel;
     final isSuperAdmin = auth.isSuperAdmin;
     final isViewAdmin = auth.isManager;
-    final canEdit = isSuperAdmin;
+    final canEdit = auth.canAddEdit;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
@@ -170,14 +170,14 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildActionCards(BuildContext context, bool isSuperAdmin) {
     final cards = <_ActionCardData>[
-      _ActionCardData('Production Log', Icons.egg_alt_rounded, AppColors.cardGradientOrange, '/production-log'),
-      _ActionCardData('Sales Tracker', Icons.payments_rounded, AppColors.cardGradientBlue, '/sales'),
-      _ActionCardData('Feed Expenses', Icons.restaurant_rounded, AppColors.cardGradientAmber, '/feed-expenses'),
+      _ActionCardData('Production Log', Icons.egg_alt_rounded, AppColors.cardGradientOrange, {'birdType': 'layers', 'initialSheet': 'eggs'}),
+      _ActionCardData('Sales Tracker', Icons.payments_rounded, AppColors.cardGradientBlue, {'birdType': 'layers', 'initialSheet': 'sales'}),
+      _ActionCardData('Feed Expenses', Icons.restaurant_rounded, AppColors.cardGradientAmber, {'birdType': 'layers', 'initialSheet': 'feed'}),
       _ActionCardData('Flock Register', Icons.pets_rounded, AppColors.cardGradientGreen, '/flock-register'),
-      _ActionCardData('Vet & Health', Icons.medical_services_rounded, const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFDC2626)]), '/vet-health'),
+      _ActionCardData('Vet & Health', Icons.medical_services_rounded, const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFDC2626)]), {'birdType': 'layers', 'initialSheet': 'vet'}),
     ];
     if (isSuperAdmin) {
-      cards.insert(4, _ActionCardData('Farm Setup', Icons.settings_rounded, const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]), '/farm-config'));
+      cards.insert(4, _ActionCardData('Farm Setup', Icons.settings_rounded, const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]), {'birdType': 'layers', 'initialSheet': 'feed'}));
     }
 
     return GridView.builder(
@@ -196,7 +196,13 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildActionCard(BuildContext context, _ActionCardData card) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, card.route),
+      onTap: () {
+        if (card.route is String) {
+          Navigator.pushNamed(context, card.route);
+        } else {
+          Navigator.pushNamed(context, '/sheets', arguments: card.route);
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           gradient: card.gradient,
@@ -419,6 +425,6 @@ class _ActionCardData {
   final String title;
   final IconData icon;
   final Gradient gradient;
-  final String route;
+  final dynamic route; // String for named route, Map for /sheets arguments
   _ActionCardData(this.title, this.icon, this.gradient, this.route);
 }
