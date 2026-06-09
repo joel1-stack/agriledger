@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/models/user_model.dart';
+import '../../services/notification_service.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
@@ -48,9 +49,18 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _loadUserData(String uid) async {
     try {
       _userModel = await _authRepo.getUserData(uid);
-      notifyListeners();
+      if (_userModel == null) {
+        _error = 'User data not found';
+        _status = AuthStatus.unauthenticated;
+      } else {
+        final token = await NotificationService().getToken();
+        if (token != null) {
+          await _authRepo.updateFcmToken(uid, token);
+        }
+      }
     } catch (e) {
-      debugPrint('Error loading user data: $e');
+      _error = 'Failed to load user data';
+      debugPrint('AuthProvider._loadUserData error: $e');
     }
   }
 

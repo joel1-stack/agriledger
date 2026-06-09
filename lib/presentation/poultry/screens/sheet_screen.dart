@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/role_guard.dart';
+import '../../../services/sync_service.dart';
 import '../../../state/poultry/poultry_provider.dart';
 import '../../../config/sheet_config.dart';
 import '../widgets/poultry_drawer.dart';
@@ -31,6 +32,7 @@ class _SheetScreenState extends State<SheetScreen> {
   late int _sheetIndex;
   String _searchQuery = '';
   String _statusFilter = 'all';
+  int _pendingSyncCount = 0;
 
   List<SheetConfig> get _currentSheets => allSheets[birdTypes[_birdIndex]] ?? layerSheets;
   SheetConfig get _currentSheet => _currentSheets[_sheetIndex];
@@ -43,6 +45,12 @@ class _SheetScreenState extends State<SheetScreen> {
     final sheets = allSheets[widget.birdType] ?? layerSheets;
     _sheetIndex = sheets.indexWhere((s) => s.key == widget.initialSheet);
     if (_sheetIndex < 0) _sheetIndex = 0;
+    _loadPendingCount();
+  }
+
+  Future<void> _loadPendingCount() async {
+    final count = await SyncService().getPendingCount();
+    if (mounted) setState(() => _pendingSyncCount = count);
   }
 
   @override
@@ -72,6 +80,38 @@ class _SheetScreenState extends State<SheetScreen> {
             IconButton(
               icon: const Icon(Icons.add_rounded),
               onPressed: () => _showAddRecord(context),
+            ),
+          if (_pendingSyncCount > 0)
+            Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.sync),
+                  onPressed: () async {
+                    await SyncService().syncPendingRecords();
+                    await _loadPendingCount();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Pending records synced')),
+                      );
+                    }
+                  },
+                ),
+                Positioned(
+                  right: 4,
+                  top: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.accentRed,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$_pendingSyncCount',
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
             ),
           IconButton(
             icon: const Icon(Icons.search_rounded),

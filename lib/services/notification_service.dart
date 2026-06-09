@@ -2,10 +2,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 class NotificationService {
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-  static String? _fcmToken;
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
 
-  static Future<void> init() async {
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  String? _fcmToken;
+
+  String? get fcmToken => _fcmToken;
+
+  Future<void> init() async {
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
@@ -16,14 +22,19 @@ class NotificationService {
     _fcmToken = await _messaging.getToken();
     debugPrint('FCM token: $_fcmToken');
 
+    _messaging.onTokenRefresh.listen((newToken) {
+      _fcmToken = newToken;
+      debugPrint('FCM token refreshed: $newToken');
+    });
+
     FirebaseMessaging.onMessage.listen(_handleMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
     FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
   }
 
-  static String? get fcmToken => _fcmToken;
+  Future<String?> getToken() => _messaging.getToken();
 
-  static void _handleMessage(RemoteMessage message) {
+  void _handleMessage(RemoteMessage message) {
     debugPrint('FCM message: ${message.notification?.title}');
   }
 

@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'state/auth/auth_provider.dart';
 import 'state/poultry/poultry_provider.dart';
 import 'services/notification_service.dart';
+import 'services/sync_service.dart';
 
 import 'presentation/auth/screens/splash_screen.dart';
 import 'presentation/auth/screens/login_screen.dart';
@@ -50,7 +51,8 @@ void main() async {
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
-  await NotificationService.init();
+  await NotificationService().init();
+  await SyncService().init();
 
   runApp(const PoultryApp());
 }

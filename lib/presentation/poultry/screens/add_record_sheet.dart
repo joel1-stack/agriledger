@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/role_guard.dart';
+import '../../../services/sync_service.dart';
 import '../../../state/poultry/poultry_provider.dart';
 import '../../../config/sheet_config.dart';
 
@@ -127,24 +128,53 @@ class _AddRecordSheetState extends State<AddRecordSheet> {
                   itemCount: columns.length + 1, // +1 for submit button
                   itemBuilder: (_, i) {
                     if (i == columns.length) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: isEditable ? _submit : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryGreen,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                            child: const Text(
-                              'Submit Record',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Poppins'),
+                      return Column(
+                        children: [
+                          FutureBuilder<bool>(
+                            future: SyncService().isOnline(),
+                            builder: (ctx, snap) {
+                              if (snap.data == false) {
+                                return Container(
+                                  padding: const EdgeInsets.all(10),
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.shade50,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.cloud_off, size: 16, color: Colors.amber.shade800),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Offline — saved locally, will sync later',
+                                          style: TextStyle(color: Colors.amber.shade900, fontSize: 12, fontFamily: 'Poppins'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: isEditable ? _submit : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryGreen,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              child: const Text(
+                                'Submit Record',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Poppins'),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       );
                     }
 
@@ -260,14 +290,21 @@ class _AddRecordSheetState extends State<AddRecordSheet> {
         data[col.key] = _controllers[col.key]?.text ?? '';
       }
     }
-    // Auto-calculate totals
     _autoCalculateFields(data);
 
-    await poultry.addRecord(data);
+    final online = await SyncService().isOnline();
+    if (online) {
+      await poultry.addRecord(data);
+    } else {
+      await SyncService().queueRecord(data);
+    }
     if (mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Record submitted for approval'), backgroundColor: AppColors.primaryGreen),
+        SnackBar(
+          content: Text(online ? 'Record submitted for approval' : 'Saved offline, will sync when connected'),
+          backgroundColor: AppColors.primaryGreen,
+        ),
       );
     }
   }

@@ -26,4 +26,8 @@ class AuthRepository {
     final doc = await _db.collection('users').doc(uid).get();
     return doc.exists ? UserModel.fromFirestore(doc) : null;
   }
+
+  Future<void> updateFcmToken(String uid, String token) async {
+    await _db.collection('users').doc(uid).update({'fcmToken': token});
+  }
 }

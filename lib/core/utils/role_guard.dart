@@ -40,4 +40,17 @@ extension RoleContext on BuildContext {
   bool get canApprove => read<AuthProvider>().canApprove;
   bool get canDelete => read<AuthProvider>().canDelete;
   String get userRole => read<AuthProvider>().userRole;
+
+  bool canEditRecord(String recordedBy, DateTime createdAt, String status) {
+    final role = userRole;
+    if (role == 'super_admin') return true;
+    if (role == 'manager') return true;
+    if (role == 'worker') {
+      final isOwner = recordedBy == read<AuthProvider>().userId;
+      final within24h = DateTime.now().difference(createdAt).inHours < 24;
+      final isPending = status == 'pending';
+      return isOwner && within24h && isPending;
+    }
+    return false;
+  }
 }
