@@ -5,6 +5,7 @@ import '../../../data/models/poultry/egg_production.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 
+import '../widgets/poultry_drawer.dart';
 class ProductionLogScreen extends StatelessWidget {
   const ProductionLogScreen({super.key});
 
@@ -23,6 +24,7 @@ class ProductionLogScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\U0001f95a Production Log')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           Container(
@@ -83,3 +85,4 @@ class ProductionLogScreen extends StatelessWidget {
     );
   }
 }
+

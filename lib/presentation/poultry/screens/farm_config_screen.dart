@@ -5,6 +5,7 @@ import '../../../data/models/poultry/farm_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 
+import '../widgets/poultry_drawer.dart';
 class FarmConfigScreen extends StatefulWidget {
   const FarmConfigScreen({super.key});
 
@@ -132,6 +133,7 @@ class _FarmConfigScreenState extends State<FarmConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('\u2699\ufe0f Farm Setup')),
+      drawer: const PoultryDrawer(),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -180,3 +182,4 @@ class _FarmConfigScreenState extends State<FarmConfigScreen> {
     );
   }
 }
+

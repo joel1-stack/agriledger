@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class MonthlySummaryScreen extends StatelessWidget {
   const MonthlySummaryScreen({super.key});
 
@@ -29,6 +30,7 @@ class MonthlySummaryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F4C5} Monthly Summary')),
+      drawer: const PoultryDrawer(),
       body: ListView(
         children: [
           _buildHeaderRow(),
@@ -98,3 +100,4 @@ class MonthlySummaryScreen extends StatelessWidget {
     );
   }
 }
+

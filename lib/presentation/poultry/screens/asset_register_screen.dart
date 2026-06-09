@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class AssetRegisterScreen extends StatelessWidget {
   const AssetRegisterScreen({super.key});
 
@@ -14,6 +15,7 @@ class AssetRegisterScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F3D7}\ufe0f Asset Register')),
+      drawer: const PoultryDrawer(),
       body: ListView.builder(
         itemCount: assets.length,
         itemBuilder: (context, index) {
@@ -47,3 +49,4 @@ class AssetRegisterScreen extends StatelessWidget {
     );
   }
 }
+

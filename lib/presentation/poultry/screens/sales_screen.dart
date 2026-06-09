@@ -5,6 +5,7 @@ import '../../../data/models/poultry/poultry_sale.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 
+import '../widgets/poultry_drawer.dart';
 class SalesScreen extends StatelessWidget {
   const SalesScreen({super.key});
 
@@ -14,6 +15,7 @@ class SalesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\U0001f4b5 Sales Tracker')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           Container(
@@ -96,3 +98,4 @@ class SalesScreen extends StatelessWidget {
     );
   }
 }
+

@@ -5,6 +5,7 @@ import '../../../data/models/poultry/other_income.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 
+import '../widgets/poultry_drawer.dart';
 class OtherIncomeScreen extends StatelessWidget {
   const OtherIncomeScreen({super.key});
 
@@ -14,6 +15,7 @@ class OtherIncomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\U0001f4b0 Other Income')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           Container(
@@ -67,3 +69,4 @@ class OtherIncomeScreen extends StatelessWidget {
     );
   }
 }
+

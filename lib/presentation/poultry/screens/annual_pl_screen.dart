@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class AnnualPLScreen extends StatelessWidget {
   const AnnualPLScreen({super.key});
 
@@ -13,6 +14,7 @@ class AnnualPLScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F4CA} Annual P&L')),
+      drawer: const PoultryDrawer(),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -77,3 +79,4 @@ class AnnualPLScreen extends StatelessWidget {
     );
   }
 }
+

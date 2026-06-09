@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class InventoryScreen extends StatelessWidget {
   const InventoryScreen({super.key});
 
@@ -15,6 +16,7 @@ class InventoryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F4E6} Inventory & Supplies')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           Container(
@@ -65,3 +67,4 @@ class InventoryScreen extends StatelessWidget {
     );
   }
 }
+

@@ -5,6 +5,7 @@ import '../../../data/models/poultry/monthly_summary.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 
+import '../widgets/poultry_drawer.dart';
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
@@ -15,6 +16,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\U0001f414 Poultry Dashboard')),
+      drawer: const PoultryDrawer(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -130,3 +132,4 @@ class _KpiItem {
   final Color color;
   _KpiItem(this.label, this.value, this.icon, this.color);
 }
+

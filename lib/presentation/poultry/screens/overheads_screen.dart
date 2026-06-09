@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class OverheadsScreen extends StatelessWidget {
   const OverheadsScreen({super.key});
 
@@ -15,6 +16,7 @@ class OverheadsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u2699\ufe0f Operations & Overheads')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           Container(
@@ -68,3 +70,4 @@ class OverheadsScreen extends StatelessWidget {
     );
   }
 }
+

@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class HousingExpensesScreen extends StatelessWidget {
   const HousingExpensesScreen({super.key});
 
@@ -14,6 +15,7 @@ class HousingExpensesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F3E0} Housing & Equipment')),
+      drawer: const PoultryDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.add),
@@ -86,3 +88,4 @@ class HousingExpensesScreen extends StatelessWidget {
     );
   }
 }
+

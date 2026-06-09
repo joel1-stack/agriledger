@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class MortalityLogScreen extends StatelessWidget {
   const MortalityLogScreen({super.key});
 
@@ -14,6 +15,7 @@ class MortalityLogScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{2620}\u{FE0F} Mortality Log')),
+      drawer: const PoultryDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.add),
@@ -86,3 +88,4 @@ class MortalityLogScreen extends StatelessWidget {
     );
   }
 }
+

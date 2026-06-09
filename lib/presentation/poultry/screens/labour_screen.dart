@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class LabourScreen extends StatelessWidget {
   const LabourScreen({super.key});
 
@@ -14,6 +15,7 @@ class LabourScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F477} Labour & Staffing')),
+      drawer: const PoultryDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.add),
@@ -87,3 +89,4 @@ class LabourScreen extends StatelessWidget {
     );
   }
 }
+

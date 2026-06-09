@@ -5,6 +5,7 @@ import '../../../data/models/poultry/flock_batch.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 
+import '../widgets/poultry_drawer.dart';
 class FlockRegisterScreen extends StatelessWidget {
   const FlockRegisterScreen({super.key});
 
@@ -15,6 +16,7 @@ class FlockRegisterScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\U0001f414 Flock Register')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           _buildSummary(provider),
@@ -116,3 +118,4 @@ class FlockRegisterScreen extends StatelessWidget {
     );
   }
 }
+

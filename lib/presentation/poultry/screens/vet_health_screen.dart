@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class VetHealthScreen extends StatelessWidget {
   const VetHealthScreen({super.key});
 
@@ -14,6 +15,7 @@ class VetHealthScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1FA9A} Vet & Health')),
+      drawer: const PoultryDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.add),
@@ -85,3 +87,4 @@ class VetHealthScreen extends StatelessWidget {
     );
   }
 }
+

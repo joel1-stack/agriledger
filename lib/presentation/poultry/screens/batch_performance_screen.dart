@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/poultry_constants.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
+import '../widgets/poultry_drawer.dart';
 class BatchPerformanceScreen extends StatelessWidget {
   const BatchPerformanceScreen({super.key});
 
@@ -18,6 +19,7 @@ class BatchPerformanceScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F4C8} Batch Performance')),
+      drawer: const PoultryDrawer(),
       body: Column(
         children: [
           if (bestBatch != null)
@@ -91,3 +93,4 @@ class BatchPerformanceScreen extends StatelessWidget {
     );
   }
 }
+
