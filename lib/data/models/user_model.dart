@@ -26,9 +26,10 @@ class UserModel {
   bool get isSuperAdmin => role == 'super_admin';
   bool get isManager => role == 'manager';
   bool get isWorker => role == 'worker';
-  bool get canAddEdit => isManager || isWorker;
+  bool get canAddEdit => isSuperAdmin || isManager || isWorker;
   bool get canApprove => isManager;
   bool get canManageUsers => isSuperAdmin;
+  bool get canDelete => isSuperAdmin;
 
   Map<String, dynamic> toFirestore() => {
     'email': email,

@@ -38,5 +38,6 @@ extension RoleContext on BuildContext {
   bool get isWorker => read<AuthProvider>().isWorker;
   bool get canAddEdit => read<AuthProvider>().canAddEdit;
   bool get canApprove => read<AuthProvider>().canApprove;
+  bool get canDelete => read<AuthProvider>().canDelete;
   String get userRole => read<AuthProvider>().userRole;
 }

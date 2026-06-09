@@ -260,12 +260,43 @@ class _SheetScreenState extends State<SheetScreen> {
   }
 
   void _showRowDetail(BuildContext context, Map<String, dynamic> row) {
+    final canDelete = context.canDelete;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _RecordDetailSheet(row: row, columns: _currentSheet.columns),
+      builder: (_) => _RecordDetailSheet(
+        row: row,
+        columns: _currentSheet.columns,
+        canDelete: canDelete,
+        onDelete: canDelete ? () => _deleteRecord(row) : null,
+      ),
     );
+  }
+
+  void _deleteRecord(Map<String, dynamic> row) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Record'),
+        content: const Text('Are you sure? This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: AppColors.accentRed)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final poultry = context.read<PoultryProvider>();
+    await poultry.deleteRecord(row['id'], row['sheetType']);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Record deleted'), backgroundColor: AppColors.accentRed),
+      );
+    }
   }
 
   String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
@@ -359,8 +390,10 @@ class _RejectDialog extends StatelessWidget {
 class _RecordDetailSheet extends StatelessWidget {
   final Map<String, dynamic> row;
   final List<SheetColumn> columns;
+  final bool canDelete;
+  final VoidCallback? onDelete;
 
-  const _RecordDetailSheet({required this.row, required this.columns});
+  const _RecordDetailSheet({required this.row, required this.columns, this.canDelete = false, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -443,6 +476,22 @@ class _RecordDetailSheet extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+            if (canDelete) ...[
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_forever_rounded, size: 18),
+                  label: const Text('Delete Record'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentRed,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                 ),
               ),
             ],

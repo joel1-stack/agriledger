@@ -30,6 +30,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isWorker => _userModel?.isWorker ?? false;
   bool get canAddEdit => _userModel?.canAddEdit ?? false;
   bool get canApprove => _userModel?.canApprove ?? false;
+  bool get canDelete => _userModel?.canDelete ?? false;
   AuthProvider() {
     _authRepo.authStateChanges.listen((user) async {
       _firebaseUser = user;

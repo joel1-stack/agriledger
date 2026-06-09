@@ -322,11 +322,12 @@ class PoultryProvider extends ChangeNotifier {
 
   /// Update a record's approval status
   Future<void> updateRecordStatus(String id, String status, {String? rejectionReason}) async {
-    // This updates the status in Firestore
-    // In a real implementation, we'd find the right collection and update
     debugPrint('Update record $id to $status (reason: $rejectionReason)');
-    // Since we have multiple collections, we update in all records
     await _repo.updateRecordStatus(id, status, rejectionReason: rejectionReason);
+  }
+
+  Future<void> deleteRecord(String id, String sheetType) async {
+    await _repo.deleteRecord(id, sheetType);
   }
 
   int get totalMortality => _mortality.fold(0, (sum, m) => sum + m.deaths);

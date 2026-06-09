@@ -306,4 +306,9 @@ class PoultryRepository {
     }
     await batch.commit();
   }
+
+  Future<void> deleteRecord(String id, String sheetType) async {
+    final collection = _sheetCollections[sheetType] ?? 'poultryFeedExpenses';
+    await _db.collection(collection).doc(id).delete();
+  }
 }
