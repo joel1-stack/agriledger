@@ -20,13 +20,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     super.dispose();
   }
 
-  // For simplicity, we'll show a mock list since real user list requires admin SDK
-  // In production, use a Cloud Function to list users
   final List<Map<String, String>> _mockUsers = [
-    {'name': 'Farm Owner', 'email': 'owner@farm.com', 'role': 'super_admin'},
-    {'name': 'Manager Mike', 'email': 'mike@farm.com', 'role': 'manager'},
-    {'name': 'Worker John', 'email': 'john@farm.com', 'role': 'worker'},
-    {'name': 'Worker Jane', 'email': 'jane@farm.com', 'role': 'worker'},
+    {'name': 'Farm Owner', 'email': 'owner@farm.com', 'role': 'superAdmin'},
+    {'name': 'Admin Alice', 'email': 'alice@farm.com', 'role': 'viewAdmin'},
+    {'name': 'General John', 'email': 'john@farm.com', 'role': 'general'},
+    {'name': 'General Jane', 'email': 'jane@farm.com', 'role': 'general'},
   ];
 
   @override
@@ -44,7 +42,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       ),
       body: Column(
         children: [
-          // Search
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -54,25 +51,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 prefixIcon: const Icon(Icons.search_rounded),
                 filled: true,
                 fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                 suffixIcon: _search.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _search = '');
-                        },
-                      )
+                    ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchCtrl.clear(); setState(() => _search = ''); })
                     : null,
               ),
               onChanged: (v) => setState(() => _search = v.toLowerCase()),
             ),
           ),
-
-          // User List
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -100,7 +86,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final emailCtrl = TextEditingController();
     final passCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
-    String role = 'worker';
+    String role = 'general';
 
     showDialog(
       context: context,
@@ -116,10 +102,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             TextField(controller: passCtrl, decoration: const InputDecoration(labelText: 'Password', isDense: true), obscureText: true),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: role,
+              initialValue: role,
               decoration: const InputDecoration(labelText: 'Role', isDense: true),
-              items: ['super_admin', 'manager', 'worker'].map((r) => DropdownMenuItem(value: r, child: Text(r.replaceAll('_', ' ')))).toList(),
-              onChanged: (v) => role = v ?? 'worker',
+              items: ['superAdmin', 'viewAdmin', 'general'].map((r) {
+                String label = r == 'superAdmin' ? 'Super Admin' : (r == 'viewAdmin' ? 'Admin' : 'General User');
+                return DropdownMenuItem(value: r, child: Text(label));
+              }).toList(),
+              onChanged: (v) => role = v ?? 'general',
             ),
           ],
         ),
@@ -152,9 +141,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Name', isDense: true)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: role,
+              initialValue: role,
               decoration: const InputDecoration(labelText: 'Role', isDense: true),
-              items: ['super_admin', 'manager', 'worker'].map((r) => DropdownMenuItem(value: r, child: Text(r.replaceAll('_', ' ')))).toList(),
+              items: ['superAdmin', 'viewAdmin', 'general'].map((r) {
+                String label = r == 'superAdmin' ? 'Super Admin' : (r == 'viewAdmin' ? 'Admin' : 'General User');
+                return DropdownMenuItem(value: r, child: Text(label));
+              }).toList(),
               onChanged: (v) => role = v ?? role,
             ),
           ],
@@ -177,11 +169,12 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final roleColors = {
-      'super_admin': AppColors.accentPurple,
-      'manager': const Color(0xFF0EA5E9),
-      'worker': AppColors.primaryGreen,
+      'superAdmin': AppColors.accentPurple,
+      'viewAdmin': const Color(0xFF0EA5E9),
+      'general': AppColors.primaryGreen,
     };
     final color = roleColors[role] ?? AppColors.primaryGreen;
+    final roleLabel = role == 'superAdmin' ? 'Super Admin' : (role == 'viewAdmin' ? 'Admin' : 'General User');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -197,7 +190,7 @@ class _UserCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
           child: Text(
-            role.replaceAll('_', ' '),
+            roleLabel,
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color, fontFamily: 'Poppins'),
           ),
         ),
@@ -206,4 +199,3 @@ class _UserCard extends StatelessWidget {
     );
   }
 }
-

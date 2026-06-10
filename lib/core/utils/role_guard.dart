@@ -34,8 +34,9 @@ class RoleBuilder extends StatelessWidget {
 
 extension RoleContext on BuildContext {
   bool get isSuperAdmin => read<AuthProvider>().isSuperAdmin;
-  bool get isManager => read<AuthProvider>().isManager;
-  bool get isWorker => read<AuthProvider>().isWorker;
+  bool get isViewAdmin => read<AuthProvider>().isViewAdmin;
+  bool get isGeneralUser => read<AuthProvider>().isGeneralUser;
+  bool get isManager => isViewAdmin || isSuperAdmin;
   bool get canAddEdit => read<AuthProvider>().canAddEdit;
   bool get canApprove => read<AuthProvider>().canApprove;
   bool get canDelete => read<AuthProvider>().canDelete;
@@ -43,9 +44,9 @@ extension RoleContext on BuildContext {
 
   bool canEditRecord(String recordedBy, DateTime createdAt, String status) {
     final role = userRole;
-    if (role == 'super_admin') return true;
-    if (role == 'manager') return true;
-    if (role == 'worker') {
+    if (role == 'superAdmin') return true;
+    if (role == 'viewAdmin') return true;
+    if (role == 'general') {
       final isOwner = recordedBy == read<AuthProvider>().userId;
       final within24h = DateTime.now().difference(createdAt).inHours < 24;
       final isPending = status == 'pending';

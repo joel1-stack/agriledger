@@ -1,6 +1,5 @@
 {
   "indexes": [
-
     { "collectionGroup": "transactions", "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "userId",    "order": "ASCENDING"  },
@@ -63,6 +62,92 @@
       "fields": [
         { "fieldPath": "itemId",    "order": "ASCENDING"  },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "stockMovements", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "journal_entries", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recordedBy", "order": "ASCENDING"  },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "journal_entries", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "period",     "order": "ASCENDING"  },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "journal_entries", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",     "order": "ASCENDING"  },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "chart_of_accounts", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type",      "order": "ASCENDING"  },
+        { "fieldPath": "code",      "order": "ASCENDING"  }
+      ]
+    },
+
+    { "collectionGroup": "units", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",       "order": "ASCENDING"  },
+        { "fieldPath": "subType",      "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",    "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "units", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "managerId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",    "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "units", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assignedWorkers", "order": "ASCENDING" },
+        { "fieldPath": "createdAt",       "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "business_units", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerId",    "order": "ASCENDING"  },
+        { "fieldPath": "name",       "order": "ASCENDING"  }
+      ]
+    },
+
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING"  },
+        { "fieldPath": "read",   "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "audit_logs", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",       "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "audit_logs", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "performedBy",  "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",    "order": "DESCENDING" }
       ]
     },
 
@@ -185,8 +270,68 @@
         { "fieldPath": "userId",    "order": "ASCENDING"  },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
-    }
+    },
 
+    { "collectionGroup": "poultryFarmConfig", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",   "order": "ASCENDING"  },
+        { "fieldPath": "subType",  "order": "ASCENDING"  },
+        { "fieldPath": "date",     "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",     "order": "ASCENDING"  },
+        { "fieldPath": "sheetType", "order": "ASCENDING"  },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "unitId", "order": "ASCENDING"  },
+        { "fieldPath": "date",   "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recordedBy", "order": "ASCENDING"  },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",   "order": "ASCENDING"  },
+        { "fieldPath": "status",   "order": "ASCENDING"  },
+        { "fieldPath": "createdAt","order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",   "order": "ASCENDING"  },
+        { "fieldPath": "recordedBy","order": "ASCENDING" },
+        { "fieldPath": "date",     "order": "DESCENDING" }
+      ]
+    },
+    { "collectionGroup": "daily_records", "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "module",   "order": "ASCENDING"  },
+        { "fieldPath": "approvedBy","order": "ASCENDING" },
+        { "fieldPath": "date",     "order": "DESCENDING" }
+      ]
+    }
   ],
   "fieldOverrides": []
 }

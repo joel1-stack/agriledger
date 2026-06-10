@@ -4,8 +4,9 @@ class UserModel {
   final String id;
   final String email;
   final String name;
-  final String role; // super_admin | manager | worker
-  final List<String> assignedFlocks;
+  final String role;
+  final List<String> assignedUnits;
+  final List<String> moduleAccess;
   final bool isActive;
   final String? phone;
   final String? fcmToken;
@@ -16,18 +17,20 @@ class UserModel {
     required this.email,
     required this.name,
     required this.role,
-    this.assignedFlocks = const [],
+    this.assignedUnits = const [],
+    this.moduleAccess = const [],
     this.isActive = true,
     this.phone,
     this.fcmToken,
     required this.createdAt,
   });
 
-  bool get isSuperAdmin => role == 'super_admin';
-  bool get isManager => role == 'manager';
-  bool get isWorker => role == 'worker';
-  bool get canAddEdit => isSuperAdmin || isManager || isWorker;
-  bool get canApprove => isManager;
+  bool get isSuperAdmin => role == 'superAdmin';
+  bool get isViewAdmin => role == 'viewAdmin';
+  bool get isGeneralUser => role == 'general';
+  bool get isManager => isViewAdmin || isSuperAdmin;
+  bool get canAddEdit => isSuperAdmin || isViewAdmin || isGeneralUser;
+  bool get canApprove => isViewAdmin || isSuperAdmin;
   bool get canManageUsers => isSuperAdmin;
   bool get canDelete => isSuperAdmin;
 
@@ -35,7 +38,8 @@ class UserModel {
     'email': email,
     'name': name,
     'role': role,
-    'assignedFlocks': assignedFlocks,
+    'assignedUnits': assignedUnits,
+    'moduleAccess': moduleAccess,
     'isActive': isActive,
     'phone': phone,
     'fcmToken': fcmToken,
@@ -48,8 +52,9 @@ class UserModel {
       id: doc.id,
       email: m['email'] ?? '',
       name: m['name'] ?? '',
-      role: m['role'] ?? 'worker',
-      assignedFlocks: List<String>.from(m['assignedFlocks'] ?? []),
+      role: m['role'] ?? 'general',
+      assignedUnits: List<String>.from(m['assignedUnits'] ?? []),
+      moduleAccess: List<String>.from(m['moduleAccess'] ?? []),
       isActive: m['isActive'] ?? true,
       phone: m['phone'],
       fcmToken: m['fcmToken'],
@@ -60,7 +65,8 @@ class UserModel {
   UserModel copyWith({
     String? name,
     String? role,
-    List<String>? assignedFlocks,
+    List<String>? assignedUnits,
+    List<String>? moduleAccess,
     bool? isActive,
     String? phone,
     String? fcmToken,
@@ -70,7 +76,8 @@ class UserModel {
         email: email,
         name: name ?? this.name,
         role: role ?? this.role,
-        assignedFlocks: assignedFlocks ?? this.assignedFlocks,
+        assignedUnits: assignedUnits ?? this.assignedUnits,
+        moduleAccess: moduleAccess ?? this.moduleAccess,
         isActive: isActive ?? this.isActive,
         phone: phone ?? this.phone,
         fcmToken: fcmToken ?? this.fcmToken,

@@ -8,6 +8,7 @@ import 'core/theme/app_theme.dart';
 
 import 'state/auth/auth_provider.dart';
 import 'state/poultry/poultry_provider.dart';
+import 'state/daily_record/daily_record_provider.dart';
 import 'services/notification_service.dart';
 import 'services/sync_service.dart';
 
@@ -15,8 +16,10 @@ import 'presentation/auth/screens/splash_screen.dart';
 import 'presentation/auth/screens/login_screen.dart';
 import 'presentation/auth/screens/register_screen.dart';
 
-import 'presentation/poultry/screens/sheet_screen.dart';
+import 'presentation/poultry/screens/dashboard_screen.dart';
 import 'presentation/poultry/screens/flock_register_screen.dart';
+import 'presentation/sheets/sheet_screen.dart';
+import 'presentation/sheets/module_selector_screen.dart';
 
 import 'presentation/admin/admin_dashboard.dart';
 import 'presentation/admin/user_management_screen.dart';
@@ -26,6 +29,9 @@ import 'presentation/worker/worker_dashboard.dart';
 import 'presentation/worker/history_screen.dart';
 
 import 'presentation/approvals/approval_queue_screen.dart';
+import 'presentation/notifications/notification_screen.dart';
+import 'presentation/profile/profile_screen.dart';
+import 'presentation/settings/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,11 +60,11 @@ void main() async {
   await NotificationService().init();
   await SyncService().init();
 
-  runApp(const PoultryApp());
+  runApp(const AgriLedgerApp());
 }
 
-class PoultryApp extends StatelessWidget {
-  const PoultryApp({super.key});
+class AgriLedgerApp extends StatelessWidget {
+  const AgriLedgerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +72,11 @@ class PoultryApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => PoultryProvider()),
+        ChangeNotifierProvider(create: (_) => DailyRecordProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Poultry Manager',
+        title: 'Agri-Ledger',
         theme: AppTheme.lightTheme,
         initialRoute: '/',
         onGenerateRoute: _generateRoute,
@@ -93,7 +100,6 @@ class PoultryApp extends StatelessWidget {
         page = const RegisterScreen();
         break;
 
-      // -- Role-based Dashboards --
       case '/dashboard':
         page = _RoleRouter();
         break;
@@ -124,18 +130,46 @@ class PoultryApp extends StatelessWidget {
         page = const HistoryScreen();
         break;
 
-      // -- Sheets (Excel-like data view for all roles) --
+      case '/notifications':
+        page = const NotificationScreen();
+        break;
+
+      case '/profile':
+        page = const ProfileScreen();
+        break;
+
+      case '/settings':
+        page = const SettingsScreen();
+        break;
+
       case '/sheets':
         page = SheetScreen(
-          birdType: args['birdType'] ?? 'layers',
+          module: args['module'] ?? 'poultry',
+          subType: args['subType'] ?? '',
           initialSheet: args['initialSheet'] ?? 'feed',
-          flockId: args['flockId'],
+          unitId: args['unitId'],
         );
         break;
 
-      // -- Legacy screens --
+      case '/modules':
+        page = const ModuleSelectorScreen();
+        break;
+
       case '/flock-register':
         page = const FlockRegisterScreen();
+        break;
+
+      case '/cashbook':
+        page = SheetScreen(module: 'cashbook', initialSheet: 'daily_entries');
+        break;
+      case '/inventory':
+        page = SheetScreen(module: 'inventory', initialSheet: 'stock_card');
+        break;
+      case '/journal':
+        page = SheetScreen(module: 'journal', initialSheet: 'debits');
+        break;
+      case '/contracts':
+        page = SheetScreen(module: 'contracts', initialSheet: 'milestones');
         break;
 
       default:
@@ -161,7 +195,6 @@ class PoultryApp extends StatelessWidget {
   }
 }
 
-/// Routes to the correct dashboard based on user role
 class _RoleRouter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -187,9 +220,7 @@ class _NotFoundScreen extends StatelessWidget {
           children: [
             Container(
               width: 100, height: 100,
-              decoration: const BoxDecoration(
-                color: AppColors.mintGreen, shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(color: AppColors.mintGreen, shape: BoxShape.circle),
               child: const Icon(Icons.map_outlined, size: 48, color: AppColors.primaryGreen),
             ),
             const SizedBox(height: 24),
@@ -208,4 +239,3 @@ class _NotFoundScreen extends StatelessWidget {
     );
   }
 }
-

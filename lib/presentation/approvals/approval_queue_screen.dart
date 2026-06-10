@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../state/poultry/poultry_provider.dart';
-import '../../config/sheet_config.dart';
+import '../../core/constants/module_config.dart';
+import '../../core/utils/role_guard.dart';
+import '../../state/daily_record/daily_record_provider.dart';
+import '../../state/auth/auth_provider.dart';
 import '../poultry/widgets/poultry_drawer.dart';
 
 class ApprovalQueueScreen extends StatefulWidget {
@@ -13,16 +15,16 @@ class ApprovalQueueScreen extends StatefulWidget {
 }
 
 class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
-  String _selectedBirdType = 'all';
+  String _selectedModule = 'all';
   String _selectedSheetType = 'all';
 
   @override
   Widget build(BuildContext context) {
-    final poultry = context.watch<PoultryProvider>();
-    final pending = poultry.allRecords.where((r) => r['status'] == 'pending').toList();
+    final provider = context.watch<DailyRecordProvider>();
+    final pending = provider.pendingRecords;
     final filtered = pending.where((r) {
-      if (_selectedBirdType != 'all' && r['birdType'] != _selectedBirdType) return false;
-      if (_selectedSheetType != 'all' && r['sheetType'] != _selectedSheetType) return false;
+      if (_selectedModule != 'all' && r.module != _selectedModule) return false;
+      if (_selectedSheetType != 'all' && r.sheetType != _selectedSheetType) return false;
       return true;
     }).toList();
 
@@ -45,26 +47,38 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
       drawer: const PoultryDrawer(),
       body: Column(
         children: [
-          // Filters
           Container(
             padding: const EdgeInsets.all(12),
             color: Colors.white,
             child: Row(
               children: [
                 Expanded(
-                  child: _DropdownFilter('Bird Type', _selectedBirdType, ['all', ...birdTypes], (v) => setState(() => _selectedBirdType = v)),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedModule,
+                    decoration: _input('Module', Icons.category_rounded),
+                    items: ['all', ...ModuleConfig.moduleIds].map((m) => DropdownMenuItem(
+                      value: m,
+                      child: Text(m == 'all' ? 'All Modules' : ModuleConfig.moduleLabel(m), style: const TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                    )).toList(),
+                    onChanged: (v) => setState(() => _selectedModule = v ?? 'all'),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _DropdownFilter('Sheet Type', _selectedSheetType,
-                      ['all', ...allSheets.values.expand((s) => s).map((s) => s.key).toSet()], (v) => setState(() => _selectedSheetType = v)),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedSheetType,
+                    decoration: _input('Sheet Type', Icons.description_rounded),
+                    items: ['all', ...ModuleConfig.moduleIds.expand((m) => ModuleConfig.getSheetKeys(m)).toSet()].map((s) => DropdownMenuItem(
+                      value: s,
+                      child: Text(_capitalize(s), style: const TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                    )).toList(),
+                    onChanged: (v) => setState(() => _selectedSheetType = v ?? 'all'),
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 8),
-
-          // Pending list
           Expanded(
             child: filtered.isEmpty
                 ? Center(
@@ -96,8 +110,22 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
     );
   }
 
-  void _approve(Map<String, dynamic> r) async {
-    await context.read<PoultryProvider>().updateRecordStatus(r['id'], 'approved');
+  InputDecoration _input(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 11),
+      prefixIcon: Icon(icon, size: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      filled: true,
+      fillColor: AppColors.backgroundGrey,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+    );
+  }
+
+  void _approve(dynamic r) async {
+    final provider = context.read<DailyRecordProvider>();
+    final auth = context.read<AuthProvider>();
+    await provider.updateRecordStatus(r.id, 'approved', approvedBy: auth.userId);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Approved'), backgroundColor: AppColors.primaryGreen),
@@ -105,49 +133,26 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
     }
   }
 
-  void _reject(Map<String, dynamic> r) async {
+  void _reject(dynamic r) async {
     final reason = await showDialog<String>(
       context: context,
       builder: (_) => _RejectDialog(),
     );
     if (reason == null) return;
-    await context.read<PoultryProvider>().updateRecordStatus(r['id'], 'rejected', rejectionReason: reason);
+    final provider = context.read<DailyRecordProvider>();
+    await provider.updateRecordStatus(r.id, 'rejected', rejectionReason: reason);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Rejected'), backgroundColor: AppColors.accentRed),
       );
     }
   }
-}
 
-class _DropdownFilter extends StatelessWidget {
-  final String label, value;
-  final List<String> items;
-  final ValueChanged<String> onChanged;
-  const _DropdownFilter(this.label, this.value, this.items, this.onChanged);
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 11),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        filled: true,
-        fillColor: AppColors.backgroundGrey,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-      ),
-      items: items.map((i) => DropdownMenuItem(value: i, child: Text(_capitalize(i), style: const TextStyle(fontSize: 12, fontFamily: 'Poppins')))).toList(),
-      onChanged: (v) => onChanged(v ?? 'all'),
-    );
-  }
-
-  String _capitalize(String s) => s == 'all' ? 'All' : s[0].toUpperCase() + s.substring(1);
+  String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 }
 
 class _ApprovalCard extends StatelessWidget {
-  final Map<String, dynamic> record;
+  final dynamic record;
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
@@ -155,9 +160,13 @@ class _ApprovalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final birdType = record['birdType'] ?? 'layers';
-    final sheetType = record['sheetType'] ?? 'feed';
-    final sheetConfig = allSheets[birdType]?.firstWhere((s) => s.key == sheetType, orElse: () => layerSheets.first);
+    final module = record.module ?? 'poultry';
+    final sheetType = record.sheetType ?? '';
+    final modColor = ModuleConfig.moduleColor(module);
+    final modLabel = ModuleConfig.moduleLabel(module);
+    final sheetKeys = ModuleConfig.getSheetKeys(module);
+    final sheetLabel = sheetKeys.contains(sheetType) ? _capitalize(sheetType) : sheetType;
+    final flat = record.toFlatMap();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -172,33 +181,40 @@ class _ApprovalCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: birdTypeColors[birdType]?.withValues(alpha: 0.15) ?? AppColors.mintGreen,
+                    color: modColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(_capitalize(birdType), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: birdTypeColors[birdType])),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(ModuleConfig.moduleIcon(module), size: 12, color: modColor),
+                      const SizedBox(width: 4),
+                      Text(modLabel, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: modColor)),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 6),
-                if (sheetConfig != null) ...[
-                  Icon(sheetConfig.icon, size: 14, color: AppColors.textMuted),
-                  const SizedBox(width: 4),
-                  Text(sheetConfig.label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
-                ],
+                Text(sheetLabel, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
                 const Spacer(),
-                Text(record['date'] ?? '', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                Text(record.date, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
               ],
             ),
             const SizedBox(height: 8),
-            Text('Flock: ${record['flockName'] ?? record['flockId'] ?? 'N/A'}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
+            Text('Unit: ${record.unitId}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
             const SizedBox(height: 4),
             Row(
               children: [
                 Icon(Icons.person_rounded, size: 12, color: AppColors.textMuted),
                 const SizedBox(width: 4),
-                Text('By: ${record['recordedBy'] ?? 'Worker'}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                Text('By: ${record.recordedByName ?? record.recordedBy ?? 'Worker'}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
                 const Spacer(),
-                Text(record['createdAt']?.toString().substring(0, 16) ?? '', style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                Text(record.createdAt.toString().substring(0, 16), style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'Poppins')),
               ],
             ),
+            if (flat['Notes'] != null || flat['notes'] != null) ...[
+              const SizedBox(height: 6),
+              Text('Notes: ${flat['Notes'] ?? flat['notes']}', style: const TextStyle(fontSize: 11, color: AppColors.textMedium, fontFamily: 'Poppins')),
+            ],
             const SizedBox(height: 10),
             Row(
               children: [
@@ -237,14 +253,14 @@ class _ApprovalCard extends StatelessWidget {
     );
   }
 
-  String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+  String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 }
 
 class _RejectDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = TextEditingController();
-    final reasons = ['Numbers don\'t match', 'Missing photo', 'Cost error', 'Duplicate', 'Wrong flock'];
+    final reasons = ['Numbers don\'t match', 'Missing information', 'Cost error', 'Duplicate', 'Wrong unit'];
     return AlertDialog(
       title: const Text('Reject Record'),
       content: Column(
@@ -266,16 +282,11 @@ class _RejectDialog extends StatelessWidget {
           TextField(
             controller: controller,
             decoration: const InputDecoration(hintText: 'Custom reason...', isDense: true),
-            onSubmitted: (v) {
-              if (v.isNotEmpty) Navigator.pop(context, v);
-            },
+            onSubmitted: (v) { if (v.isNotEmpty) Navigator.pop(context, v); },
           ),
         ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-      ],
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))],
     );
   }
 }
-

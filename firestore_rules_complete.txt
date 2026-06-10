@@ -1,0 +1,371 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // UNIFIED HELPER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isGeneralUser() {
+      return isAuthenticated() && getUserData().role == 'general';
+    }
+
+    function isViewAdmin() {
+      return isAuthenticated() && getUserData().role == 'viewAdmin';
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserData().role == 'superAdmin';
+    }
+
+    function isAdmin() {
+      return isViewAdmin() || isSuperAdmin();
+    }
+
+    function canManage() {
+      return isAuthenticated() && isAdmin();
+    }
+
+    function canUpdateOwned(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    function canDeleteOwned(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    function isAssignedToUnit(unitId) {
+      let unitDoc = get(/databases/$(database)/documents/units/$(unitId));
+      return unitDoc.exists && request.auth.uid in unitDoc.data.assignedWorkers;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // USERS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /users/{userId} {
+      allow read:   if isOwner(userId) || isAdmin();
+      allow create: if (isAuthenticated() && isOwner(userId)) || isSuperAdmin();
+      allow update: if isOwner(userId) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BUSINESS UNITS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /business_units/{businessId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // UNITS (Flocks, Cows, Plots, Houses, Trucks, Shops)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /units/{unitId} {
+      allow read: if isAuthenticated() && (isAdmin() || isAssignedToUnit(unitId));
+      allow write: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MODULE CONFIGS (Read-only for most)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /module_configs/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DAILY RECORDS - UNIFIED APPROVAL WORKFLOW (ALL MODULES)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /daily_records/{docId} {
+      // READ: Authenticated users can read
+      allow read: if isAuthenticated()
+        && (isAdmin()
+            || resource.data.recordedBy == request.auth.uid
+            || isAssignedToUnit(resource.data.unitId));
+
+      // CREATE: Worker or Manager can submit
+      allow create: if isAuthenticated()
+        && (isAdmin() || isGeneralUser())
+        && request.resource.data.keys().hasAll([
+             'module', 'subType', 'sheetType', 'unitId', 'date',
+             'data', 'recordedBy', 'status', 'createdAt', 'updatedAt'
+           ])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.recordedBy == request.auth.uid;
+
+      // UPDATE: Manager can approve/reject, Worker can edit own within 24h
+      allow update: if isAuthenticated()
+        && (
+          // ViewAdmin/Manager: Only allow status change (approval/rejection)
+          (isViewAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status', 'approvedBy', 'rejectionReason', 'updatedAt']))
+          ||
+          // Worker: Edit own pending record within 24h, cannot change status
+          (isGeneralUser()
+            && resource.data.recordedBy == request.auth.uid
+            && resource.data.status == 'pending'
+            && resource.data.createdAt > request.time - duration.value(24, "hours")
+            && request.resource.data.status == 'pending')
+        );
+
+      // DELETE: Manager/ViewAdmin only
+      allow delete: if isAuthenticated() && isViewAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INVENTORY (Enhanced with approval workflow)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.businessUnitId exists;
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /stock_movements/{movementId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && (isAdmin() || isGeneralUser())
+        && request.resource.data.status == 'pending';
+      allow update: if isViewAdmin()  // Approve stock movements
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'approvedBy', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TRANSACTIONS (Cashbook - Manager/SuperAdmin)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isAdmin()
+        && request.resource.data.type in ['income', 'expense']
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0;
+      allow update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // JOURNAL ENTRIES (SuperAdmin only - double-entry accounting)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /journal_entries/{entryId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow create: if isSuperAdmin();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /chart_of_accounts/{accountId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LEGACY COLLECTIONS (Backward compatibility)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /dairy/{dairyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /crops/{cropId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /livestock/{livestockId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryLayers/{layersId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /farmDailyRecords/{recordId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryFarmConfig/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /poultryBatches/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryProduction/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultrySales/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryOtherIncome/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryFeedExpenses/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryFeedConsumption/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryVetHealth/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryMortality/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryHousing/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryLabour/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryOverheads/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryMonthlySummary/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryInventory/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /poultryAssets/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /contracts/{contractId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /paymentMilestones/{milestoneId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /properties/{propertyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /rentalUnits/{unitId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /vehicles/{vehicleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /transportExpenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /analytics/{analyticsId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // AUDIT LOGS & NOTIFICATIONS (System-generated, no direct user writes)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /audit_logs/{logId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if false;  // Only Cloud Functions write
+    }
+
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false;  // Only Cloud Functions write
+    }
+  }
+}
+

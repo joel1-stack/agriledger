@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../state/auth/auth_provider.dart';
-import '../../../state/poultry/poultry_provider.dart';
+import '../../../state/daily_record/daily_record_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../config/sheet_config.dart';
+import '../../../core/constants/module_config.dart';
 
 class PoultryDrawer extends StatelessWidget {
   const PoultryDrawer({super.key});
@@ -11,27 +11,28 @@ class PoultryDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final poultry = Provider.of<PoultryProvider>(context);
+    final recordProvider = Provider.of<DailyRecordProvider>(context);
     final user = auth.userModel;
     final isSuper = auth.isSuperAdmin;
+    final isAdmin = auth.isViewAdmin;
     final isMgr = auth.isManager;
-    final isWkr = auth.isWorker;
+    final isGen = auth.isGeneralUser;
+
+    String roleLabel = 'General User';
+    if (isSuper) roleLabel = 'Super Admin';
+    else if (isAdmin) roleLabel = 'Admin';
+    else if (isGen) roleLabel = 'Worker';
 
     return Drawer(
       backgroundColor: Colors.white,
       child: SafeArea(
         child: Column(
           children: [
-            // User Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0D5C26), Color(0xFF1B8A3C)],
-                ),
+                gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF0D5C26), Color(0xFF1B8A3C)]),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,49 +66,60 @@ class PoultryDrawer extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
                         child: Text(
-                          isSuper ? 'Super Admin' : (isMgr ? 'Manager' : 'Worker'),
+                          roleLabel,
                           style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                       ),
                       const SizedBox(width: 6),
-                      Text('${poultry.totalActiveBirds} birds', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11)),
+                      Text('${recordProvider.totalPending} pending', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11)),
                     ],
                   ),
                 ],
               ),
             ),
-
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 children: [
                   _Section('MAIN', [
                     _Item(Icons.dashboard_rounded, 'Dashboard', () => Navigator.pushReplacementNamed(context, '/dashboard')),
-                    if (isSuper || isMgr)
+                    _Item(Icons.notifications_rounded, 'Notifications', () => Navigator.pushReplacementNamed(context, '/notifications')),
+                    _Item(Icons.person_rounded, 'Profile', () => Navigator.pushReplacementNamed(context, '/profile')),
+                    if (isMgr)
                       _Item(Icons.people_rounded, 'Approvals', () => Navigator.pushReplacementNamed(context, '/manager/approvals')),
                   ]),
-
-                  _Section('SHEETS', [
-                    ...birdTypes.map((bt) => _Item(
-                          birdTypeIcons[bt] ?? Icons.description,
-                          _cap(bt),
-                          () => Navigator.pushReplacementNamed(context, '/sheets', arguments: {'birdType': bt}),
+                  _Section('OPERATIONS', [
+                    ...['poultry', 'dairy', 'crops', 'livestock'].map((id) => _Item(
+                          ModuleConfig.moduleIcon(id),
+                          ModuleConfig.moduleLabel(id),
+                          () => Navigator.pushReplacementNamed(context, '/sheets', arguments: {'module': id}),
                         )),
                   ]),
-
-                  if (isSuper || isMgr)
+                  _Section('FINANCE & LOGISTICS', [
+                    ...['cashbook', 'inventory', 'journal'].map((id) => _Item(
+                          ModuleConfig.moduleIcon(id),
+                          ModuleConfig.moduleLabel(id),
+                          () => Navigator.pushReplacementNamed(context, '/sheets', arguments: {'module': id}),
+                        )),
+                  ]),
+                  _Section('ASSETS & PROJECTS', [
+                    ...['property', 'transport', 'contracts'].map((id) => _Item(
+                          ModuleConfig.moduleIcon(id),
+                          ModuleConfig.moduleLabel(id),
+                          () => Navigator.pushReplacementNamed(context, '/sheets', arguments: {'module': id}),
+                        )),
+                  ]),
+                  if (isMgr)
                     _Section('MANAGEMENT', [
                       if (isSuper)
                         _Item(Icons.people_rounded, 'Users', () => Navigator.pushReplacementNamed(context, '/admin/users')),
-                      _Item(Icons.pets_rounded, 'Flocks', () => Navigator.pushReplacementNamed(context, '/flock-register')),
                     ]),
-
                   if (isSuper)
                     _Section('REPORTS', [
                       _Item(Icons.assessment_rounded, 'Reports', () => Navigator.pushReplacementNamed(context, '/admin/reports')),
+                      _Item(Icons.settings_rounded, 'Settings', () => Navigator.pushReplacementNamed(context, '/settings')),
                     ]),
-
-                  if (isWkr)
+                  if (isGen)
                     _Section('WORKER', [
                       _Item(Icons.home_rounded, 'My Dashboard', () => Navigator.pushReplacementNamed(context, '/worker/dashboard')),
                       _Item(Icons.history_rounded, 'My History', () => Navigator.pushReplacementNamed(context, '/worker/history')),
@@ -115,8 +127,6 @@ class PoultryDrawer extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Footer
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE8F5ED)))),
@@ -142,8 +152,6 @@ class PoultryDrawer extends StatelessWidget {
       ),
     );
   }
-
-  String _cap(String s) => s[0].toUpperCase() + s.substring(1);
 }
 
 class _Section extends StatelessWidget {

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../state/poultry/poultry_provider.dart';
+import '../../../state/daily_record/daily_record_provider.dart';
 import '../../../state/auth/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/constants/module_config.dart';
 import '../widgets/poultry_drawer.dart';
 import '../widgets/quick_add_sheet.dart';
 
@@ -12,10 +13,10 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final poultry = Provider.of<PoultryProvider>(context);
+    final records = Provider.of<DailyRecordProvider>(context);
     final user = auth.userModel;
     final isSuperAdmin = auth.isSuperAdmin;
-    final isViewAdmin = auth.isManager;
+    final isViewAdmin = auth.isViewAdmin;
     final canEdit = auth.canAddEdit;
 
     return Scaffold(
@@ -32,7 +33,6 @@ class DashboardScreen extends StatelessWidget {
           : null,
       body: CustomScrollView(
         slivers: [
-          // ── Profile Header with Gradient ──
           SliverToBoxAdapter(
             child: Container(
               decoration: const BoxDecoration(
@@ -49,7 +49,6 @@ class DashboardScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top bar
                       Row(
                         children: [
                           Builder(
@@ -69,8 +68,7 @@ class DashboardScreen extends StatelessWidget {
                               children: [
                                 Icon(
                                   isSuperAdmin ? Icons.shield : (isViewAdmin ? Icons.visibility : Icons.person),
-                                  color: Colors.white,
-                                  size: 14,
+                                  color: Colors.white, size: 14,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -83,32 +81,21 @@ class DashboardScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      // Greeting
                       Text(
                         'Hello, ${user?.name ?? 'Farmer'}',
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          fontFamily: 'Poppins',
-                        ),
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins'),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${poultry.totalActiveBirds} active birds across all batches',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontFamily: 'Poppins',
-                        ),
+                        '${records.totalPending} pending approvals across ${ModuleConfig.moduleIds.length} modules',
+                        style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins'),
                       ),
                       const SizedBox(height: 16),
-                      // Quick Stats Row
                       Row(
                         children: [
-                          _QuickStat(label: 'Income', value: 'KES ${_fmt(poultry.totalRevenue)}', color: Colors.white),
-                          _QuickStat(label: 'Expenses', value: 'KES ${_fmt(poultry.totalExpenses)}', color: Colors.white),
-                          _QuickStat(label: 'Profit', value: 'KES ${_fmt(poultry.netProfit)}', color: Colors.white),
+                          _QuickStat(label: 'Records', value: '${records.records.length}', color: Colors.white),
+                          _QuickStat(label: 'Pending', value: '${records.totalPending}', color: Colors.white),
+                          _QuickStat(label: 'Modules', value: '${ModuleConfig.moduleIds.length}', color: Colors.white),
                         ],
                       ),
                     ],
@@ -117,32 +104,19 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // ── Content Area ──
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Action Cards ──
                   const Text('Quick Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 12),
                   _buildActionCards(context, isSuperAdmin),
                   const SizedBox(height: 24),
-
-                  // ── Performance Summary ──
-                  const Text('Performance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  const Text('Modules', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                   const SizedBox(height: 12),
-                  _buildPerformanceCards(context, poultry),
-                  const SizedBox(height: 24),
-
-                  // ── Monthly Overview ──
-                  if (isSuperAdmin || isViewAdmin) ...[
-                    const Text('Monthly Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                    const SizedBox(height: 12),
-                    _buildMonthlyChart(context, poultry),
-                  ],
+                  _buildModuleCards(context),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -170,14 +144,13 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildActionCards(BuildContext context, bool isSuperAdmin) {
     final cards = <_ActionCardData>[
-      _ActionCardData('Production Log', Icons.egg_alt_rounded, AppColors.cardGradientOrange, {'birdType': 'layers', 'initialSheet': 'eggs'}),
-      _ActionCardData('Sales Tracker', Icons.payments_rounded, AppColors.cardGradientBlue, {'birdType': 'layers', 'initialSheet': 'sales'}),
-      _ActionCardData('Feed Expenses', Icons.restaurant_rounded, AppColors.cardGradientAmber, {'birdType': 'layers', 'initialSheet': 'feed'}),
-      _ActionCardData('Flock Register', Icons.pets_rounded, AppColors.cardGradientGreen, '/flock-register'),
-      _ActionCardData('Vet & Health', Icons.medical_services_rounded, const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFDC2626)]), {'birdType': 'layers', 'initialSheet': 'vet'}),
+      _ActionCardData('All Modules', Icons.dashboard_rounded, AppColors.cardGradientGreen, '/modules'),
+      _ActionCardData('Approvals', Icons.people_rounded, AppColors.cardGradientOrange, '/manager/approvals'),
+      _ActionCardData('Poultry', Icons.pets_rounded, AppColors.cardGradientBlue, {'module': 'poultry'}),
+      _ActionCardData('Dairy', Icons.agriculture_rounded, AppColors.cardGradientAmber, {'module': 'dairy'}),
     ];
     if (isSuperAdmin) {
-      cards.insert(4, _ActionCardData('Farm Setup', Icons.settings_rounded, const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]), {'birdType': 'layers', 'initialSheet': 'feed'}));
+      cards.insert(2, _ActionCardData('User Management', Icons.settings_rounded, const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]), '/admin/users'));
     }
 
     return GridView.builder(
@@ -208,11 +181,7 @@ class DashboardScreen extends StatelessWidget {
           gradient: card.gradient,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(
-              color: card.gradient.colors.first.withValues(alpha: 0.35),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
+            BoxShadow(color: card.gradient.colors.first.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 6)),
           ],
         ),
         child: Padding(
@@ -223,21 +192,10 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(12)),
                 child: Icon(card.icon, color: Colors.white, size: 24),
               ),
-              Text(
-                card.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Poppins',
-                ),
-              ),
+              Text(card.title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
             ],
           ),
         ),
@@ -245,92 +203,54 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPerformanceCards(BuildContext context, PoultryProvider p) {
-    return Row(
-      children: [
-        Expanded(
-          child: _PerformanceCard(
-            title: 'Laying Rate',
-            value: '${p.avgLayerRate.toStringAsFixed(1)}%',
-            icon: Icons.egg_alt_rounded,
-            gradient: AppColors.cardGradientOrange,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _PerformanceCard(
-            title: 'Total Birds',
-            value: '${p.totalActiveBirds}',
-            icon: Icons.pets_rounded,
-            gradient: AppColors.cardGradientGreen,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMonthlyChart(BuildContext context, PoultryProvider p) {
-    final summaries = p.monthlySummaries;
-    if (summaries.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(Icons.bar_chart_rounded, size: 48, color: AppColors.textMuted),
-                const SizedBox(height: 12),
-                const Text('No monthly data yet', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+  Widget _buildModuleCards(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.4,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: ModuleConfig.moduleIds.length,
+      itemBuilder: (_, i) {
+        final id = ModuleConfig.moduleIds[i];
+        final mod = ModuleConfig.getModule(id);
+        return GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/sheets', arguments: {'module': id}),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [mod.color, mod.color.withValues(alpha: 0.7)]),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(color: mod.color.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 6)),
               ],
             ),
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: summaries.take(5).map((s) {
-            final maxIncome = summaries.map((e) => e.totalIncome).reduce((a, b) => a > b ? a : b);
-            final ratio = maxIncome > 0 ? s.totalIncome / maxIncome : 0.0;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
-                    width: 50,
-                    child: Text(s.month, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(12)),
+                    child: Icon(mod.icon, color: Colors.white, size: 24),
                   ),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: ratio,
-                        minHeight: 10,
-                        backgroundColor: AppColors.backgroundGrey,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          s.netPL >= 0 ? AppColors.primaryGreen : AppColors.accentRed,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 60,
-                    child: Text(
-                      'KES ${(s.totalIncome / 1000).toStringAsFixed(0)}K',
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textDark),
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(mod.label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
+                      Text('${mod.sheets.length} sheets', style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins')),
+                    ],
                   ),
                 ],
               ),
-            );
-          }).toList(),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -347,75 +267,15 @@ class _QuickStat extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(14),
-        ),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: color,
-                fontFamily: 'Poppins',
-              ),
-            ),
+            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color, fontFamily: 'Poppins')),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: color.withValues(alpha: 0.8),
-                fontFamily: 'Poppins',
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 11, color: color.withValues(alpha: 0.8), fontFamily: 'Poppins')),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PerformanceCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Gradient gradient;
-  const _PerformanceCard({required this.title, required this.value, required this.icon, required this.gradient});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: gradient.colors.first.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 22),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins'),
-          ),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins'),
-          ),
-        ],
       ),
     );
   }
@@ -425,6 +285,6 @@ class _ActionCardData {
   final String title;
   final IconData icon;
   final Gradient gradient;
-  final dynamic route; // String for named route, Map for /sheets arguments
+  final dynamic route;
   _ActionCardData(this.title, this.icon, this.gradient, this.route);
 }

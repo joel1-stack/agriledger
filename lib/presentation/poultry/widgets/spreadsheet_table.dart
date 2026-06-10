@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../config/sheet_config.dart';
 import 'status_badge.dart';
 
 class SpreadsheetTable extends StatelessWidget {
-  final List<SheetColumn> columns;
+  final List<dynamic> columns;
   final List<Map<String, dynamic>> rows;
   final void Function(Map<String, dynamic> row)? onTapRow;
   final void Function(Map<String, dynamic> row)? onApprove;
@@ -25,6 +24,11 @@ class SpreadsheetTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colLabels = columns.map((c) {
+      if (c is String) return c;
+      return c.label ?? '';
+    }).toList();
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
@@ -34,33 +38,14 @@ class SpreadsheetTable extends StatelessWidget {
         dataRowMaxHeight: 52,
         headingRowColor: WidgetStateProperty.all(AppColors.primaryGreen.withValues(alpha: 0.08)),
         columns: [
-          ...columns.map((c) => DataColumn(
-                label: Text(
-                  c.label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
+          ...colLabels.map((c) => DataColumn(
+                label: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
               )),
           if (showStatus)
-            const DataColumn(
-              label: Text(
-                'Status',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ),
+            const DataColumn(label: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins'))),
           if (showApproval) const DataColumn(label: Text('Action', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
         ],
         rows: rows.asMap().entries.map((entry) {
-          
           final row = entry.value;
           final status = row['status'] ?? 'pending';
           return DataRow(
@@ -71,18 +56,11 @@ class SpreadsheetTable extends StatelessWidget {
             }),
             onSelectChanged: onTapRow != null ? (_) => onTapRow!(row) : null,
             cells: [
-              ...columns.map((c) {
-                final val = row[c.key]?.toString() ?? '';
+              ...colLabels.map((c) {
+                final key = c.toLowerCase();
+                final val = row[key]?.toString() ?? row[c]?.toString() ?? '';
                 return DataCell(
-                  Text(
-                    c.isCurrency ? 'KES ${_fmt(double.tryParse(val) ?? 0)}' : val,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textDark,
-                      fontWeight: c.readOnly ? FontWeight.w600 : FontWeight.normal,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                  Text(val, style: const TextStyle(fontSize: 12, color: AppColors.textDark, fontFamily: 'Poppins')),
                 );
               }),
               if (showStatus)
@@ -104,11 +82,7 @@ class SpreadsheetTable extends StatelessWidget {
                         )
                       : Text(
                           status == 'approved' ? 'Approved' : 'Rejected',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: status == 'approved' ? AppColors.primaryGreen : AppColors.accentRed,
-                            fontFamily: 'Poppins',
-                          ),
+                          style: TextStyle(fontSize: 11, color: status == 'approved' ? AppColors.primaryGreen : AppColors.accentRed, fontFamily: 'Poppins'),
                         ),
                 ),
             ],
@@ -116,12 +90,6 @@ class SpreadsheetTable extends StatelessWidget {
         }).toList(),
       ),
     );
-  }
-
-  static String _fmt(double v) {
-    if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(1)}M';
-    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}K';
-    return v.toStringAsFixed(0);
   }
 }
 
@@ -137,10 +105,7 @@ class _ActionBtn extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-        ),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
         child: Icon(icon, size: 18, color: color),
       ),
     );

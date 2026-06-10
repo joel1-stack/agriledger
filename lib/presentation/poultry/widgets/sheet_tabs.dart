@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../../config/sheet_config.dart';
 import '../../../core/theme/app_theme.dart';
 
+class SheetTabData {
+  final String label;
+  final IconData icon;
+  const SheetTabData({required this.label, this.icon = Icons.description});
+}
+
 class SheetTabs extends StatelessWidget {
-  final List<SheetConfig> sheets;
+  final List<SheetTabData> sheets;
   final int selectedIndex;
   final ValueChanged<int> onChanged;
 
@@ -41,20 +46,11 @@ class SheetTabs extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    sheet.icon,
-                    size: 16,
-                    color: isSelected ? Colors.white : AppColors.textMedium,
-                  ),
+                  Icon(sheet.icon, size: 16, color: isSelected ? Colors.white : AppColors.textMedium),
                   const SizedBox(width: 4),
                   Text(
                     sheet.label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppColors.textMedium,
-                      fontFamily: 'Poppins',
-                    ),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSelected ? Colors.white : AppColors.textMedium, fontFamily: 'Poppins'),
                   ),
                 ],
               ),

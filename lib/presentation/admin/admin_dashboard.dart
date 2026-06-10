@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../state/poultry/poultry_provider.dart';
+import '../../core/constants/module_config.dart';
+import '../../state/daily_record/daily_record_provider.dart';
 import '../../state/auth/auth_provider.dart';
 import '../poultry/widgets/poultry_drawer.dart';
-import '../../config/sheet_config.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final poultry = context.watch<PoultryProvider>();
+    final provider = context.watch<DailyRecordProvider>();
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
-        title: const Text('Poultry Manager'),
+        title: const Text('Agri-Ledger'),
         actions: [
           IconButton(
             icon: const Icon(Icons.people_rounded),
@@ -35,7 +35,6 @@ class AdminDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome + Role
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -62,7 +61,7 @@ class AdminDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Welcome, ${auth.displayName}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'Poppins')),
-                            const Text('Super Admin • Read-Only View', style: TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'Poppins')),
+                            const Text('Super Admin • All Modules', style: TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'Poppins')),
                           ],
                         ),
                       ),
@@ -71,18 +70,16 @@ class AdminDashboard extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _MiniStat('Total Birds', '${poultry.totalActiveBirds}', Colors.white),
-                      _MiniStat('Revenue', 'KES ${_fmt(poultry.totalRevenue)}', Colors.white),
-                      _MiniStat('Expenses', 'KES ${_fmt(poultry.totalExpenses)}', Colors.white),
+                      _MiniStat('Total Records', '${provider.records.length}', Colors.white),
+                      _MiniStat('Pending', '${provider.totalPending}', Colors.white),
+                      _MiniStat('Modules', '${ModuleConfig.moduleIds.length}', Colors.white),
                     ],
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-
-            // Overview Grid
-            const Text('Overview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
+            const Text('Modules', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
             const SizedBox(height: 12),
             GridView.count(
               crossAxisCount: 2,
@@ -91,22 +88,25 @@ class AdminDashboard extends StatelessWidget {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 1.5,
-              children: [
-                _StatCard('Total Birds', '${poultry.totalActiveBirds}', Icons.pets_rounded, AppColors.cardGradientGreen, () {}),
-                _StatCard('Mortality Today', '${poultry.totalMortality}', Icons.warning_amber_rounded, AppColors.cardGradientOrange, () {}),
-                _StatCard('Egg Income', 'KES ${_fmt(poultry.totalEggIncome)}', Icons.egg_alt_rounded, AppColors.cardGradientAmber, () {}),
-                _StatCard('Net Profit', 'KES ${_fmt(poultry.netProfit)}', Icons.account_balance_rounded, AppColors.cardGradientBlue, () {}),
-              ],
+              children: ModuleConfig.moduleIds.map((id) {
+                final mod = ModuleConfig.getModule(id);
+                final pendingCount = provider.pendingCount(id);
+                return _StatCard(
+                  mod.label,
+                  '$pendingCount pending',
+                  mod.icon,
+                  LinearGradient(colors: [mod.color, mod.color.withValues(alpha: 0.7)]),
+                  () => Navigator.pushNamed(context, '/sheets', arguments: {'module': id}),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 20),
-
-            // Quick access to sheets
-            const Text('Sheets', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
+            const Text('Approval Queue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
             const SizedBox(height: 12),
-            ...birdTypes.map((bt) => Padding(
+            ...ModuleConfig.moduleIds.where((mid) => provider.pendingCount(mid) > 0).map((id) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: InkWell(
-                    onTap: () => Navigator.pushNamed(context, '/sheets', arguments: {'birdType': bt}),
+                    onTap: () => Navigator.pushNamed(context, '/manager/approvals'),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -116,21 +116,19 @@ class AdminDashboard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(birdTypeIcons[bt], color: birdTypeColors[bt]),
+                          Icon(ModuleConfig.moduleIcon(id), color: ModuleConfig.moduleColor(id)),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(_capitalize(bt), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
+                            child: Text(ModuleConfig.moduleLabel(id), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
                           ),
-                          Text('${allSheets[bt]?.length ?? 0} sheets', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                          Text('${provider.pendingCount(id)} pending', style: const TextStyle(fontSize: 12, color: AppColors.accentOrange)),
                           const Icon(Icons.chevron_right, color: AppColors.textMuted),
                         ],
                       ),
                     ),
                   ),
                 )),
-
             const SizedBox(height: 20),
-            // Users management link
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -149,7 +147,6 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
   String _fmt(double v) => v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toStringAsFixed(0);
 }
 
@@ -186,16 +183,18 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(gradient: gradient, borderRadius: BorderRadius.circular(16)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, color: Colors.white, size: 22),
-        const Spacer(),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
-        Text(title, style: const TextStyle(fontSize: 11, color: Colors.white70, fontFamily: 'Poppins')),
-      ]),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(gradient: gradient, borderRadius: BorderRadius.circular(16)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, color: Colors.white, size: 22),
+          const Spacer(),
+          Text(title, style: const TextStyle(fontSize: 11, color: Colors.white70, fontFamily: 'Poppins')),
+          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
+        ]),
+      ),
     );
   }
 }
-

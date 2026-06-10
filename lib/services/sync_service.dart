@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../data/repositories/poultry_repository.dart';
+import '../data/repositories/daily_record_repository.dart';
 
 class SyncService {
   static final SyncService _instance = SyncService._internal();
@@ -10,11 +10,11 @@ class SyncService {
   SyncService._internal();
 
   Database? _db;
-  final PoultryRepository _repo = PoultryRepository();
+  final DailyRecordRepository _repo = DailyRecordRepository();
 
   Future<void> init() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'poultry_sync.db');
+    final path = join(dbPath, 'agri_sync.db');
     _db = await openDatabase(
       path,
       version: 1,
@@ -22,9 +22,10 @@ class SyncService {
         await db.execute('''
           CREATE TABLE sync_queue (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            bird_type TEXT NOT NULL,
+            module TEXT NOT NULL,
+            sub_type TEXT NOT NULL,
             sheet_type TEXT NOT NULL,
-            flock_id TEXT NOT NULL,
+            unit_id TEXT NOT NULL DEFAULT '',
             data_json TEXT NOT NULL,
             status TEXT NOT NULL DEFAULT 'pending_sync',
             retry_count INTEGER DEFAULT 0,
@@ -47,9 +48,10 @@ class SyncService {
     final data = Map<String, dynamic>.from(recordData);
     data.remove('id');
     return await _db!.insert('sync_queue', {
-      'bird_type': data['birdType'] ?? '',
+      'module': data['module'] ?? '',
+      'sub_type': data['subType'] ?? '',
       'sheet_type': data['sheetType'] ?? '',
-      'flock_id': data['flockId'] ?? '',
+      'unit_id': data['unitId'] ?? '',
       'data_json': jsonEncode(data),
       'status': 'pending_sync',
       'retry_count': 0,
@@ -73,8 +75,7 @@ class SyncService {
     for (final item in pending) {
       try {
         final data = jsonDecode(item['data_json']);
-        final sheetType = item['sheet_type'];
-        await _repo.addRecord(sheetType, Map<String, dynamic>.from(data));
+        await _repo.addRecordFromMap(Map<String, dynamic>.from(data));
         await _db!.update(
           'sync_queue',
           {

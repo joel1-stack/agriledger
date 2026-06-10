@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../state/poultry/poultry_provider.dart';
+import '../../core/constants/module_config.dart';
+import '../../state/daily_record/daily_record_provider.dart';
 import '../../state/auth/auth_provider.dart';
-import '../../config/sheet_config.dart';
 import '../poultry/widgets/poultry_drawer.dart';
 import '../poultry/widgets/status_badge.dart';
 
@@ -12,10 +12,10 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final poultry = context.watch<PoultryProvider>();
+    final provider = context.watch<DailyRecordProvider>();
     final auth = context.watch<AuthProvider>();
-    final myRecords = poultry.allRecords.where((r) => r['recordedBy'] == auth.userId).toList();
-    myRecords.sort((a, b) => (b['date'] ?? '').toString().compareTo((a['date'] ?? '').toString()));
+    final myRecords = provider.records.where((r) => r.recordedBy == auth.userId).toList();
+    myRecords.sort((a, b) => b.date.compareTo(a.date));
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
@@ -56,9 +56,8 @@ class HistoryScreen extends StatelessWidget {
               itemCount: myRecords.length,
               itemBuilder: (_, i) {
                 final r = myRecords[i];
-                final birdType = r['birdType'] ?? 'layers';
-                final sheetKey = r['sheetType'] ?? 'feed';
-                final sheetCfg = allSheets[birdType]?.firstWhere((s) => s.key == sheetKey, orElse: () => layerSheets.first);
+                final modColor = ModuleConfig.moduleColor(r.module);
+                final modLabel = ModuleConfig.moduleLabel(r.module);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -70,35 +69,41 @@ class HistoryScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            StatusBadge(status: r['status'] ?? 'pending'),
+                            StatusBadge(status: r.status),
                             const SizedBox(width: 8),
-                            if (sheetCfg != null) ...[
-                              Icon(sheetCfg.icon, size: 14, color: AppColors.textMuted),
-                              const SizedBox(width: 4),
-                              Text(sheetCfg.label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontFamily: 'Poppins')),
-                            ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: modColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(ModuleConfig.moduleIcon(r.module), size: 10, color: modColor),
+                                  const SizedBox(width: 3),
+                                  Text(modLabel, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: modColor)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(_capitalize(r.sheetType), style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontFamily: 'Poppins')),
                             const Spacer(),
-                            Text(r['date'] ?? '', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                            Text(r.date.toString().substring(0, 10), style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        if (r['flockName'] != null || r['flockId'] != null)
-                          Text('Flock: ${r['flockName'] ?? r['flockId']}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
-                        if (r['rejectionReason'] != null) ...[
+                        Text('Unit: ${r.unitId}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
+                        if (r.rejectionReason != null) ...[
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentRed.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            decoration: BoxDecoration(color: AppColors.accentRed.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)),
                             child: Row(
                               children: [
                                 const Icon(Icons.info_rounded, size: 14, color: AppColors.accentRed),
                                 const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(r['rejectionReason'], style: const TextStyle(fontSize: 11, color: AppColors.accentRed, fontFamily: 'Poppins')),
-                                ),
+                                Expanded(child: Text(r.rejectionReason!, style: const TextStyle(fontSize: 11, color: AppColors.accentRed, fontFamily: 'Poppins'))),
                               ],
                             ),
                           ),
@@ -111,4 +116,6 @@ class HistoryScreen extends StatelessWidget {
             ),
     );
   }
+
+  String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 }

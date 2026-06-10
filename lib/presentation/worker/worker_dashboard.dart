@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../state/poultry/poultry_provider.dart';
+import '../../core/constants/module_config.dart';
+import '../../state/daily_record/daily_record_provider.dart';
 import '../../state/auth/auth_provider.dart';
 import '../poultry/widgets/poultry_drawer.dart';
 
@@ -10,7 +11,7 @@ class WorkerDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final poultry = context.watch<PoultryProvider>();
+    final provider = context.watch<DailyRecordProvider>();
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
@@ -34,7 +35,6 @@ class WorkerDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -73,17 +73,12 @@ class WorkerDashboard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Flocks assigned
-            const Text('My Flocks', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
+            const Text('My Modules', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
             const SizedBox(height: 12),
-            ...poultry.flocks.where((f) => auth.userModel?.assignedFlocks.contains(f['id']) ?? true).map((f) => Padding(
+            ...ModuleConfig.moduleIds.map((id) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: InkWell(
-                    onTap: () => Navigator.pushNamed(context, '/sheets', arguments: {
-                      'birdType': f['birdType'] ?? 'layers',
-                      'flockId': f['id'],
-                    }),
+                    onTap: () => Navigator.pushNamed(context, '/sheets', arguments: {'module': id}),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -93,20 +88,21 @@ class WorkerDashboard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.1),
-                            child: Text(
-                              (f['name'] ?? 'F')[0].toString().toUpperCase(),
-                              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primaryGreen),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: ModuleConfig.moduleColor(id).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            child: Icon(ModuleConfig.moduleIcon(id), color: ModuleConfig.moduleColor(id), size: 22),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(f['name'] ?? 'Flock', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
-                                Text('${f['currentCount'] ?? 0} birds • ${f['houseNumber'] ?? ''}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                                Text(ModuleConfig.moduleLabel(id), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
+                                Text('${provider.pendingCount(id)} pending entries', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
                               ],
                             ),
                           ),
@@ -116,19 +112,14 @@ class WorkerDashboard extends StatelessWidget {
                     ),
                   ),
                 )),
-
             const SizedBox(height: 20),
-            // Quick Add Record
             SizedBox(
-              width: double.infinity,
-              height: 52,
+              width: double.infinity, height: 52,
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pushNamed(context, '/worker/add'),
                 icon: const Icon(Icons.add_rounded),
                 label: const Text('Add Daily Record'),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
+                style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
               ),
             ),
             const SizedBox(height: 8),
@@ -161,4 +152,3 @@ class WorkerDashboard extends StatelessWidget {
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 }
-
