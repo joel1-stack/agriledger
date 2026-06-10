@@ -38,8 +38,8 @@ class SyncService {
   }
 
   Future<bool> isOnline() async {
-    final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    final results = await Connectivity().checkConnectivity();
+    return results.any((r) => r != ConnectivityResult.none);
   }
 
   Future<int> queueRecord(Map<String, dynamic> recordData) async {

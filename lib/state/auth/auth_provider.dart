@@ -51,20 +51,21 @@ class AuthProvider extends ChangeNotifier {
       final userData = await _authRepo.getUserData(uid);
       if (userData != null) {
         _userModel = userData;
+        _status = AuthStatus.authenticated;
         final token = await NotificationService().getToken();
         if (token != null) {
           await _authRepo.updateFcmToken(uid, token);
         }
-      } else if (_userModel == null) {
+      } else {
         _error = 'User data not found';
         _status = AuthStatus.unauthenticated;
       }
     } catch (e) {
-      if (_userModel == null) {
-        _error = 'Failed to load user data';
-      }
+      _error = 'Failed to load user data';
+      _status = AuthStatus.unauthenticated;
       debugPrint('AuthProvider._loadUserData error: $e');
     }
+    notifyListeners();
   }
 
   Future<bool> signIn(String email, String password) async {

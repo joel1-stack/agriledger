@@ -6,105 +6,130 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // ── Users ──────────────────────────────────────────
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isOwner(userId);
-      allow delete: if false;
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserRole() == 'super_admin';
     }
 
-    // ── Poultry Collections ────────────────────────────
+    function isManager() {
+      return isAuthenticated() && getUserRole() == 'manager';
+    }
+
+    function isWorker() {
+      return isAuthenticated() && getUserRole() == 'worker';
+    }
+
+    function canManage() {
+      return isAuthenticated() && (isSuperAdmin() || isManager());
+    }
+
+    // ── Users ──
+    match /users/{userId} {
+      allow read:   if isOwner(userId) || canManage();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Poultry Collections (daily records) ──
     match /poultryFarmConfig/{doc} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow write:  if isAuthenticated();
     }
 
     match /poultryBatches/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryProduction/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultrySales/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryOtherIncome/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryFeedExpenses/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryFeedConsumption/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryVetHealth/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryMortality/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryHousing/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryLabour/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryOverheads/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryMonthlySummary/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow write:  if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryInventory/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     match /poultryAssets/{doc} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
   }
 }
