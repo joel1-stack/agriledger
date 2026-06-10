@@ -1,4 +1,4 @@
-mport '../data/models/daily_record_model.dart';
+import '../data/models/daily_record_model.dart';
 import '../data/repositories/complete_records_repository.dart';
 
 /// Service Layer for Complete Records Management

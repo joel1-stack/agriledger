@@ -89,7 +89,7 @@ class CompleteRecordsRepository {
           (snap) => snap.docs
               .map(
                 (d) =>
-                    DailyRecord.fromMap(d.id, d.data() as Map<String, dynamic>),
+                    DailyRecord.fromMap(d.id, d.data()!),
               )
               .toList(),
         );
@@ -106,7 +106,7 @@ class CompleteRecordsRepository {
           (snap) => snap.docs
               .map(
                 (d) =>
-                    DailyRecord.fromMap(d.id, d.data() as Map<String, dynamic>),
+                    DailyRecord.fromMap(d.id, d.data()!),
               )
               .toList(),
         );
@@ -221,7 +221,8 @@ class CompleteRecordsRepository {
           .where('status', isEqualTo: 'pending')
           .count()
           .get();
-      counts[module] = snap.count;
+      final int c = snap.count ?? 0;
+      counts[module] = c;
     }
 
     return counts;
@@ -229,32 +230,35 @@ class CompleteRecordsRepository {
 
   /// Get total records by module and status
   Future<Map<String, dynamic>> getModuleStats(String module) async {
-    final pending = await _db
+    final pc = await _db
         .collection('daily_records')
         .where('module', isEqualTo: module)
         .where('status', isEqualTo: 'pending')
         .count()
         .get();
+    final int pending = pc.count ?? 0;
 
-    final approved = await _db
+    final ac = await _db
         .collection('daily_records')
         .where('module', isEqualTo: module)
         .where('status', isEqualTo: 'approved')
         .count()
         .get();
+    final int approved = ac.count ?? 0;
 
-    final rejected = await _db
+    final rc = await _db
         .collection('daily_records')
         .where('module', isEqualTo: module)
         .where('status', isEqualTo: 'rejected')
         .count()
         .get();
+    final int rejected = rc.count ?? 0;
 
-    return {
-      'pending': pending.count,
-      'approved': approved.count,
-      'rejected': rejected.count,
-      'total': pending.count + approved.count + rejected.count,
+    return <String, dynamic>{
+      'pending': pending,
+      'approved': approved,
+      'rejected': rejected,
+      'total': pending + approved + rejected,
     };
   }
 }

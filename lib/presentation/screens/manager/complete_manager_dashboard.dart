@@ -6,7 +6,7 @@ import '../../../core/constants/complete_module_config.dart';
 import '../../../data/models/daily_record_model.dart';
 import '../../../services/complete_records_service.dart';
 import '../../../state/auth/auth_provider.dart';
-import '../widgets/status_badge.dart';
+import '../../../presentation/poultry/widgets/status_badge.dart';
 
 /// Complete Manager Dashboard - Unified approval queue for all modules
 class CompleteManagerDashboard extends StatefulWidget {

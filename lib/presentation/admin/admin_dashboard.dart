@@ -147,7 +147,6 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  String _fmt(double v) => v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toStringAsFixed(0);
 }
 
 class _MiniStat extends StatelessWidget {

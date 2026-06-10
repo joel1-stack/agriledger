@@ -6,6 +6,7 @@ import '../../core/utils/role_guard.dart';
 import '../../state/daily_record/daily_record_provider.dart';
 import '../../state/auth/auth_provider.dart';
 import '../poultry/widgets/poultry_drawer.dart';
+import '../poultry/widgets/status_badge.dart';
 
 class ApprovalQueueScreen extends StatefulWidget {
   const ApprovalQueueScreen({super.key});

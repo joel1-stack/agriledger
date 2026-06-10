@@ -127,12 +127,6 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  static String _fmt(double v) {
-    if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(1)}M';
-    if (v >= 1000) return '${(v / 1000).toStringAsFixed(0)}K';
-    return v.toStringAsFixed(0);
-  }
-
   void _showQuickAdd(BuildContext context) {
     showModalBottomSheet(
       context: context,

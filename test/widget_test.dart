@@ -4,7 +4,7 @@ import 'package:agri_ledger/main.dart';
 
 void main() {
   testWidgets('App loads without crashing', (WidgetTester tester) async {
-    await tester.pumpWidget(const PoultryApp());
+    await tester.pumpWidget(const AgriLedgerApp());
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

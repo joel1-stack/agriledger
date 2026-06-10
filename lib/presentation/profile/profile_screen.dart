@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/constants/module_config.dart';
 import '../../state/auth/auth_provider.dart';
 import '../poultry/widgets/poultry_drawer.dart';
 

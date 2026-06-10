@@ -178,7 +178,7 @@ class _SheetScreenState extends State<SheetScreen> {
 
           // Sheet Type Tabs
           SheetTabs(
-            sheets: _currentSheets,
+            sheets: _currentSheets.map((s) => SheetTabData(label: s.label, icon: s.icon)).toList(),
             selectedIndex: _sheetIndex,
             onChanged: (i) => setState(() => _sheetIndex = i),
           ),
@@ -247,9 +247,11 @@ class _SheetScreenState extends State<SheetScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => AddRecordSheet(
-        birdType: birdTypes[_birdIndex],
-        sheetConfig: _currentSheet,
-        flockId: widget.flockId,
+        module: 'poultry',
+        subType: birdTypes[_birdIndex],
+        sheetKey: _currentSheet.key,
+        columns: _currentSheet.columns.map((c) => c.key).toList(),
+        unitId: widget.flockId,
       ),
     );
   }

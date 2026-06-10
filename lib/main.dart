@@ -16,7 +16,6 @@ import 'presentation/auth/screens/splash_screen.dart';
 import 'presentation/auth/screens/login_screen.dart';
 import 'presentation/auth/screens/register_screen.dart';
 
-import 'presentation/poultry/screens/dashboard_screen.dart';
 import 'presentation/poultry/screens/flock_register_screen.dart';
 import 'presentation/sheets/sheet_screen.dart';
 import 'presentation/sheets/module_selector_screen.dart';

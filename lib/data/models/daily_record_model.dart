@@ -83,6 +83,9 @@ class DailyRecord {
     ...data,
   };
 
+  bool get isPending => status == 'pending';
+  bool get isRejected => status == 'rejected';
+
   static DateTime _parseDateTime(dynamic dt) {
     if (dt == null) return DateTime.now();
     if (dt is DateTime) return dt;
