@@ -143,7 +143,7 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
-                                      colors: [Colors.black.withValues(alpha: 0.1), Colors.black.withValues(alpha: 0.75)],
+                                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.3)],
                                     ),
                                   ),
                                 ),
@@ -172,13 +172,13 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(_capitalize(widget.sheetKey), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
+                                      Text(_capitalize(widget.sheetKey), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 2))])),
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          Icon(Icons.circle, size: 8, color: Colors.white.withValues(alpha: 0.7)),
+                                          Icon(Icons.circle, size: 8, color: Colors.white.withValues(alpha: 0.85)),
                                           const SizedBox(width: 6),
-                                          Text('${modInfo.label} • ${_capitalize(widget.subType)}', style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins')),
+                                          Text('${modInfo.label} • ${_capitalize(widget.subType)}', style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), fontFamily: 'Poppins', shadows: const [Shadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 1))])),
                                         ],
                                       ),
                                     ],
