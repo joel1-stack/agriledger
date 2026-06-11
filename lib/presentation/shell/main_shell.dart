@@ -42,40 +42,87 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 6)),
           ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (i) => setState(() => _currentIndex = i),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: AppColors.primaryGreen,
-          unselectedItemColor: AppColors.textMuted,
-          selectedFontSize: 12,
-          unselectedFontSize: 11,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Poppins'),
-          unselectedLabelStyle: const TextStyle(fontFamily: 'Poppins'),
-          elevation: 0,
-          items: [
-            const BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-            const BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Modules'),
-            BottomNavigationBarItem(
-              icon: isAdmin
-                  ? Badge(
-                      isLabelVisible: pending > 0,
-                      label: Text('$pending', style: const TextStyle(fontSize: 10)),
-                      child: const Icon(Icons.checklist_rounded),
-                    )
-                  : const Icon(Icons.history_rounded),
-              label: isAdmin ? 'Approvals' : 'History',
-            ),
-            const BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (i) => setState(() => _currentIndex = i),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            selectedItemColor: const Color(0xFF0F172A),
+            unselectedItemColor: const Color(0xFF94A3B8),
+            selectedFontSize: 11,
+            unselectedFontSize: 10,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Poppins'),
+            unselectedLabelStyle: const TextStyle(fontFamily: 'Poppins'),
+            elevation: 0,
+            items: [
+              BottomNavigationBarItem(
+                icon: _navIcon(Icons.home_rounded, 0),
+                activeIcon: _navIconActive(Icons.home_rounded, const Color(0xFF0EA5E9)),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: _navIcon(Icons.grid_view_rounded, 1),
+                activeIcon: _navIconActive(Icons.grid_view_rounded, const Color(0xFFF59E0B)),
+                label: 'Modules',
+              ),
+              BottomNavigationBarItem(
+                icon: isAdmin
+                    ? Badge(
+                        isLabelVisible: pending > 0,
+                        label: Text('$pending', style: const TextStyle(fontSize: 9, color: Colors.white)),
+                        child: _navIcon(Icons.checklist_rounded, 2),
+                      )
+                    : _navIcon(Icons.history_rounded, 2),
+                activeIcon: isAdmin
+                    ? Badge(
+                        isLabelVisible: pending > 0,
+                        label: Text('$pending', style: const TextStyle(fontSize: 9, color: Colors.white)),
+                        child: _navIconActive(Icons.checklist_rounded, const Color(0xFF8B5CF6)),
+                      )
+                    : _navIconActive(Icons.history_rounded, const Color(0xFF8B5CF6)),
+                label: isAdmin ? 'Approvals' : 'History',
+              ),
+              BottomNavigationBarItem(
+                icon: _navIcon(Icons.person_rounded, 3),
+                activeIcon: _navIconActive(Icons.person_rounded, const Color(0xFF10B981)),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _navIcon(IconData icon, int index) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: _currentIndex == index ? Colors.transparent : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, size: 22),
+    );
+  }
+
+  Widget _navIconActive(IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, size: 22, color: color),
     );
   }
 

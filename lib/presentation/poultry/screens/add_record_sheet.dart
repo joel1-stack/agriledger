@@ -134,21 +134,7 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                           child: SizedBox(
                             height: 200,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Image.network(imgUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: modInfo.color)),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.3)],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            child: Image.network(imgUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: modInfo.color)),
                           ),
                         ),
                         Positioned(
@@ -172,13 +158,13 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(_capitalize(widget.sheetKey), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 2))])),
+                                      Text(_capitalize(widget.sheetKey), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, 3)), Shadow(color: Colors.black26, blurRadius: 24, offset: Offset(0, 6))])),
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          Icon(Icons.circle, size: 8, color: Colors.white.withValues(alpha: 0.85)),
+                                          Icon(Icons.circle, size: 8, color: Colors.white),
                                           const SizedBox(width: 6),
-                                          Text('${modInfo.label} • ${_capitalize(widget.subType)}', style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), fontFamily: 'Poppins', shadows: const [Shadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 1))])),
+                                          Text('${modInfo.label} • ${_capitalize(widget.subType)}', style: const TextStyle(fontSize: 13, color: Colors.white, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)), Shadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 4))])),
                                         ],
                                       ),
                                     ],

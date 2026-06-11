@@ -86,33 +86,15 @@ class _LoginScreenState extends State<LoginScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // ── Full screen background: online image + overlay ──
+          // ── Full screen background: online image ──
           Positioned.fill(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80'),
+                  fit: BoxFit.cover,
                 ),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x660A3D1F),
-                        Color(0x991B6B35),
-                        Color(0xCC27AE60),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
@@ -130,8 +112,8 @@ class _LoginScreenState extends State<LoginScreen>
                   const SizedBox(height: 40),
                   // Logo
                   Container(
-                    width: 90,
-                    height: 90,
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withOpacity(0.15),
@@ -147,14 +129,16 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.eco_rounded,
-                      size: 48,
-                      color: Colors.white,
+                    child: ClipOval(
+                      child: Image.asset(
+                        "assets/images/3D Logo 'sam k' with Nature tru one .png",
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.eco_rounded, size: 48, color: Colors.white),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'AgriLedger',
                     style: TextStyle(
                       fontFamily: 'Poppins',
@@ -162,6 +146,10 @@ class _LoginScreenState extends State<LoginScreen>
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       letterSpacing: 1.0,
+                      shadows: [
+                        Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 12, offset: const Offset(0, 4)),
+                        Shadow(color: Colors.black.withOpacity(0.3), blurRadius: 24, offset: const Offset(0, 8)),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -170,9 +158,13 @@ class _LoginScreenState extends State<LoginScreen>
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white,
                       fontWeight: FontWeight.w400,
                       letterSpacing: 0.3,
+                      shadows: [
+                        Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 8, offset: const Offset(0, 2)),
+                        Shadow(color: Colors.black.withOpacity(0.2), blurRadius: 16, offset: const Offset(0, 4)),
+                      ],
                     ),
                   ),
                 ],

@@ -110,31 +110,13 @@ class _RegisterScreenState extends State<RegisterScreen>
         children: [
           // ── Background ──
           Positioned.fill(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage('https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?auto=format&fit=crop&w=1080&q=80'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?auto=format&fit=crop&w=1080&q=80'),
+                  fit: BoxFit.cover,
                 ),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0x660A3D1F),
-                        Color(0x991B8A3C),
-                        Color(0xCC4CAF50),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
@@ -171,14 +153,35 @@ class _RegisterScreenState extends State<RegisterScreen>
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.15),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        "assets/images/3D Logo 'sam k' with Nature tru one .png",
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.eco_rounded, size: 32, color: Colors.white),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Join AgriLedger 🌾',
+                    'Join AgriLedger',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 30,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
+                      shadows: [
+                        Shadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 4)),
+                        Shadow(color: Colors.black26, blurRadius: 24, offset: Offset(0, 8)),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -187,7 +190,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
+                        Shadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 4)),
+                      ],
                     ),
                   ),
                 ],

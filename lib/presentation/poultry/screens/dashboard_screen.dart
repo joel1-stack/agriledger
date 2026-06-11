@@ -198,22 +198,14 @@ class DashboardScreen extends StatelessWidget {
           Navigator.pushNamed(context, '/sheets', arguments: card.route);
         }
       },
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(image: NetworkImage(card.imageUrl), fit: BoxFit.cover),
-          boxShadow: [
-            BoxShadow(color: card.gradient.colors.first.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6)),
-          ],
-        ),
         child: Container(
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, card.gradient.colors.first.withValues(alpha: 0.55)],
-            ),
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(image: NetworkImage(card.imageUrl), fit: BoxFit.cover),
+            boxShadow: [
+              BoxShadow(color: card.gradient.colors.first.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6)),
+            ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -226,12 +218,11 @@ class DashboardScreen extends StatelessWidget {
                   decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(12)),
                   child: Icon(card.icon, color: card.gradient.colors.first, size: 22),
                 ),
-                Text(card.title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 2))])),
+                Text(card.title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)), Shadow(color: Colors.black38, blurRadius: 16, offset: Offset(0, 4))])),
               ],
             ),
           ),
         ),
-      ),
     );
   }
 
@@ -289,15 +280,6 @@ class DashboardScreen extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, color.withValues(alpha: 0.5)],
-                    ),
-                  ),
-                ),
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -312,9 +294,9 @@ class DashboardScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(mod.label, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 2))])),
+                          Text(mod.label, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)), Shadow(color: Colors.black38, blurRadius: 16, offset: Offset(0, 4))])),
                           const SizedBox(height: 2),
-                          Text('${mod.sheets.length} sheets', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11, fontFamily: 'Poppins', shadows: [const Shadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 1))])),
+                          Text('${mod.sheets.length} sheets', style: TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'Poppins', shadows: [const Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2))])),
                         ],
                       ),
                     ],
