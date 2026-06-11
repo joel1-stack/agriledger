@@ -243,6 +243,22 @@ class _AddRecordSheetState extends State<AddRecordSheet> {
     if (!_formKey.currentState!.validate()) return;
     final provider = context.read<DailyRecordProvider>();
     final auth = context.read<AuthProvider>();
+
+    final fields = <String, dynamic>{};
+    for (final col in widget.columns) {
+      if (_isDropdown(col)) {
+        fields[col] = _dropdownValues[col] ?? '';
+      } else if (col.toLowerCase().contains('qty') || col.toLowerCase().contains('kg') ||
+          col.toLowerCase().contains('cost') || col.toLowerCase().contains('price') ||
+          col.toLowerCase().contains('amount') || col.toLowerCase().contains('total') ||
+          col.toLowerCase().contains('rate') || col.toLowerCase().contains('litres') ||
+          col.toLowerCase().contains('hours') || col.toLowerCase().contains('sample')) {
+        fields[col] = double.tryParse(_controllers[col]?.text ?? '') ?? 0;
+      } else {
+        fields[col] = _controllers[col]?.text ?? '';
+      }
+    }
+
     final data = <String, dynamic>{
       'module': widget.module,
       'subType': widget.subType,
@@ -252,20 +268,8 @@ class _AddRecordSheetState extends State<AddRecordSheet> {
       'status': 'pending',
       'recordedBy': auth.userId,
       'recordedByName': auth.displayName,
+      'data': fields,
     };
-    for (final col in widget.columns) {
-      if (_isDropdown(col)) {
-        data[col] = _dropdownValues[col] ?? '';
-      } else if (col.toLowerCase().contains('qty') || col.toLowerCase().contains('kg') ||
-          col.toLowerCase().contains('cost') || col.toLowerCase().contains('price') ||
-          col.toLowerCase().contains('amount') || col.toLowerCase().contains('total') ||
-          col.toLowerCase().contains('rate') || col.toLowerCase().contains('litres') ||
-          col.toLowerCase().contains('hours') || col.toLowerCase().contains('sample')) {
-        data[col] = double.tryParse(_controllers[col]?.text ?? '') ?? 0;
-      } else {
-        data[col] = _controllers[col]?.text ?? '';
-      }
-    }
 
     final online = await SyncService().isOnline();
     if (online) {

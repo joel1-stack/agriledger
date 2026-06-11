@@ -282,7 +282,6 @@ class _SheetScreenState extends State<SheetScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => _RecordDetailSheet(
         row: row,
-        columns: _currentColumns,
         canDelete: canDelete,
         onDelete: canDelete ? () => _deleteRecord(row) : null,
       ),
@@ -382,14 +381,23 @@ class _RejectDialog extends StatelessWidget {
 
 class _RecordDetailSheet extends StatelessWidget {
   final Map<String, dynamic> row;
-  final List<String> columns;
   final bool canDelete;
   final VoidCallback? onDelete;
 
-  const _RecordDetailSheet({required this.row, required this.columns, this.canDelete = false, this.onDelete});
+  const _RecordDetailSheet({required this.row, this.canDelete = false, this.onDelete});
+
+  static const _systemKeys = {
+    'id', 'module', 'subType', 'sheetType', 'unitId',
+    'recordedBy', 'recordedByName', 'approvedBy',
+    'status', 'rejectionReason', 'createdAt', 'updatedAt', 'data',
+  };
 
   @override
   Widget build(BuildContext context) {
+    final displayFields = row.entries
+        .where((e) => !_systemKeys.contains(e.key))
+        .toList();
+
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.3,
@@ -418,24 +426,24 @@ class _RecordDetailSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            ...columns.map((c) {
-              final val = row[c.toLowerCase()]?.toString() ?? row[c]?.toString() ?? '';
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: Text(c, style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontFamily: 'Poppins')),
+            ...displayFields.map((e) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(_humanizeKey(e.key), style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                  ),
+                  Expanded(
+                    child: Text(
+                      e.value?.toString() ?? '',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark, fontFamily: 'Poppins'),
                     ),
-                    Expanded(
-                      child: Text(val, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark, fontFamily: 'Poppins')),
-                    ),
-                  ],
-                ),
-              );
-            }),
+                  ),
+                ],
+              ),
+            )),
             if (row['rejectionReason'] != null) ...[
               const SizedBox(height: 12),
               Container(
@@ -470,5 +478,10 @@ class _RecordDetailSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _humanizeKey(String key) {
+    if (key.isEmpty) return key;
+    return '${key[0].toUpperCase()}${key.substring(1)}';
   }
 }

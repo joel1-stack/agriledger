@@ -80,9 +80,16 @@ class SpreadsheetTable extends StatelessWidget {
                             _ActionBtn(Icons.cancel, AppColors.accentRed, () => onReject?.call(row)),
                           ],
                         )
-                      : Text(
-                          status == 'approved' ? 'Approved' : 'Rejected',
-                          style: TextStyle(fontSize: 11, color: status == 'approved' ? AppColors.primaryGreen : AppColors.accentRed, fontFamily: 'Poppins'),
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: (status == 'approved' ? AppColors.primaryGreen : AppColors.accentRed).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            status == 'approved' ? 'Approved' : 'Rejected',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: status == 'approved' ? AppColors.primaryGreen : AppColors.accentRed, fontFamily: 'Poppins'),
+                          ),
                         ),
                 ),
             ],
@@ -101,12 +108,22 @@ class _ActionBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-        child: Icon(icon, size: 18, color: color),
+    return Material(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 2)),
+            ],
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
       ),
     );
   }

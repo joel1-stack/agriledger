@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../state/auth/auth_provider.dart';
+import '../../data/models/user_model.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -19,13 +21,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     _searchCtrl.dispose();
     super.dispose();
   }
-
-  final List<Map<String, String>> _mockUsers = [
-    {'name': 'Farm Owner', 'email': 'owner@farm.com', 'role': 'superAdmin'},
-    {'name': 'Admin Alice', 'email': 'alice@farm.com', 'role': 'viewAdmin'},
-    {'name': 'General John', 'email': 'john@farm.com', 'role': 'general'},
-    {'name': 'General Jane', 'email': 'jane@farm.com', 'role': 'general'},
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -60,19 +55,36 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _mockUsers.length,
-              itemBuilder: (_, i) {
-                final u = _mockUsers[i];
-                if (_search.isNotEmpty && !u['name']!.toLowerCase().contains(_search) && !u['email']!.toLowerCase().contains(_search)) {
-                  return const SizedBox.shrink();
+            child: StreamBuilder<List<UserModel>>(
+              stream: _usersStream(),
+              builder: (_, snap) {
+                if (snap.hasError) {
+                  return Center(child: Text('Error loading users: ${snap.error}', style: const TextStyle(color: AppColors.accentRed)));
                 }
-                return _UserCard(
-                  name: u['name']!,
-                  email: u['email']!,
-                  role: u['role']!,
-                  onTap: () => _showEditUserDialog(context, u),
+                final users = snap.data ?? [];
+                final filtered = users.where((u) {
+                  if (_search.isEmpty) return true;
+                  return u.name.toLowerCase().contains(_search) || u.email.toLowerCase().contains(_search);
+                }).toList();
+                if (filtered.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.people_outline_rounded, size: 64, color: AppColors.textMuted),
+                        SizedBox(height: 8),
+                        Text('No users found', style: TextStyle(fontSize: 15, color: AppColors.textMuted)),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (_, i) => _UserCard(
+                    user: filtered[i],
+                    onTap: () => _showEditUserDialog(context, filtered[i]),
+                  ),
                 );
               },
             ),
@@ -80,6 +92,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         ],
       ),
     );
+  }
+
+  Stream<List<UserModel>> _usersStream() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => UserModel.fromFirestore(d)).toList());
   }
 
   void _showAddUserDialog(BuildContext context) {
@@ -120,6 +140,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               await auth.signUp(emailCtrl.text, passCtrl.text, nameCtrl.text, role: role);
               if (context.mounted) Navigator.pop(context);
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 2,
+            ),
             child: const Text('Create'),
           ),
         ],
@@ -127,14 +153,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  void _showEditUserDialog(BuildContext context, Map<String, String> user) {
-    final nameCtrl = TextEditingController(text: user['name']);
-    String role = user['role']!;
+  void _showEditUserDialog(BuildContext context, UserModel user) {
+    final nameCtrl = TextEditingController(text: user.name);
+    String role = user.role;
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Edit ${user['name']}'),
+      builder: (ctx) => AlertDialog(
+        title: Text('Edit ${user.name}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -152,8 +178,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Save')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance.collection('users').doc(user.id).update({
+                'name': nameCtrl.text,
+                'role': role,
+              });
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 2,
+            ),
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -161,10 +202,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 }
 
 class _UserCard extends StatelessWidget {
-  final String name, email, role;
+  final UserModel user;
   final VoidCallback onTap;
 
-  const _UserCard({required this.name, required this.email, required this.role, required this.onTap});
+  const _UserCard({required this.user, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -173,8 +214,8 @@ class _UserCard extends StatelessWidget {
       'viewAdmin': const Color(0xFF0EA5E9),
       'general': AppColors.primaryGreen,
     };
-    final color = roleColors[role] ?? AppColors.primaryGreen;
-    final roleLabel = role == 'superAdmin' ? 'Super Admin' : (role == 'viewAdmin' ? 'Admin' : 'General User');
+    final color = roleColors[user.role] ?? AppColors.primaryGreen;
+    final roleLabel = user.role == 'superAdmin' ? 'Super Admin' : (user.role == 'viewAdmin' ? 'Admin' : 'General User');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -182,10 +223,10 @@ class _UserCard extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: color.withValues(alpha: 0.1),
-          child: Text(name[0].toUpperCase(), style: TextStyle(fontWeight: FontWeight.w700, color: color)),
+          child: Text(user.name[0].toUpperCase(), style: TextStyle(fontWeight: FontWeight.w700, color: color)),
         ),
-        title: Text(name, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Text(email, style: const TextStyle(fontFamily: 'Poppins', fontSize: 12)),
+        title: Text(user.name, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 14)),
+        subtitle: Text(user.email, style: const TextStyle(fontFamily: 'Poppins', fontSize: 12)),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),

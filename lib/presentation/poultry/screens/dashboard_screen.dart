@@ -35,70 +35,79 @@ class DashboardScreen extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Container(
+              height: 280,
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0D5C26), Color(0xFF1B8A3C), Color(0xFF27AE60)],
+                image: DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'),
+                  fit: BoxFit.cover,
                 ),
               ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Builder(
-                            builder: (ctx) => IconButton(
-                              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 26),
-                              onPressed: () => Scaffold.of(ctx).openDrawer(),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xCC0D5C26), Color(0xCC1B8A3C), Color(0x9927AE60)],
+                  ),
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Builder(
+                              builder: (ctx) => IconButton(
+                                icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 26),
+                                onPressed: () => Scaffold.of(ctx).openDrawer(),
+                              ),
                             ),
-                          ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isSuperAdmin ? Icons.shield : (isViewAdmin ? Icons.visibility : Icons.person),
+                                    color: Colors.white, size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    isSuperAdmin ? 'Super Admin' : (isViewAdmin ? 'Admin' : 'User'),
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isSuperAdmin ? Icons.shield : (isViewAdmin ? Icons.visibility : Icons.person),
-                                  color: Colors.white, size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  isSuperAdmin ? 'Super Admin' : (isViewAdmin ? 'Admin' : 'User'),
-                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Hello, ${user?.name ?? 'Farmer'}',
-                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins'),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${records.totalPending} pending approvals across ${ModuleConfig.moduleIds.length} modules',
-                        style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins'),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          _QuickStat(label: 'Records', value: '${records.records.length}', color: Colors.white),
-                          _QuickStat(label: 'Pending', value: '${records.totalPending}', color: Colors.white),
-                          _QuickStat(label: 'Modules', value: '${ModuleConfig.moduleIds.length}', color: Colors.white),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Hello, ${user?.name ?? 'Farmer'}',
+                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins'),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${records.totalPending} pending approvals across ${ModuleConfig.moduleIds.length} modules',
+                          style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins'),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            _QuickStat(label: 'Records', value: '${records.records.length}', color: Colors.white),
+                            _QuickStat(label: 'Pending', value: '${records.totalPending}', color: Colors.white),
+                            _QuickStat(label: 'Modules', value: '${ModuleConfig.moduleIds.length}', color: Colors.white),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

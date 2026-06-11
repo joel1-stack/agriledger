@@ -104,7 +104,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        elevation: 0,
+        elevation: 3,
+        shadowColor: AppColors.primaryGreen.withValues(alpha: 0.4),
         textStyle: const TextStyle(
           fontFamily: 'Poppins',
           fontSize: 16,

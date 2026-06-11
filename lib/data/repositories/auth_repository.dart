@@ -30,4 +30,14 @@ class AuthRepository {
   Future<void> updateFcmToken(String uid, String token) async {
     await _db.collection('users').doc(uid).update({'fcmToken': token});
   }
+
+  Stream<List<UserModel>> streamUsers() {
+    return _db.collection('users').orderBy('createdAt', descending: true).snapshots().map(
+      (snap) => snap.docs.map((d) => UserModel.fromFirestore(d)).toList(),
+    );
+  }
+
+  Future<void> updateUser(String uid, Map<String, dynamic> data) async {
+    await _db.collection('users').doc(uid).update(data);
+  }
 }

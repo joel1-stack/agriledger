@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/module_config.dart';
-import '../../core/utils/role_guard.dart';
 import '../../state/daily_record/daily_record_provider.dart';
 import '../../state/auth/auth_provider.dart';
 import '../poultry/widgets/poultry_drawer.dart';
-import '../poultry/widgets/status_badge.dart';
 
 class ApprovalQueueScreen extends StatefulWidget {
   const ApprovalQueueScreen({super.key});
@@ -223,26 +221,30 @@ class _ApprovalCard extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: onApprove,
                     icon: const Icon(Icons.check_circle_rounded, size: 18),
-                    label: const Text('Approve', style: TextStyle(fontSize: 12)),
+                    label: const Text('Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryGreen,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2,
+                      shadowColor: AppColors.primaryGreen.withValues(alpha: 0.4),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: ElevatedButton.icon(
                     onPressed: onReject,
                     icon: const Icon(Icons.cancel_rounded, size: 18),
-                    label: const Text('Reject', style: TextStyle(fontSize: 12)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.accentRed,
-                      side: const BorderSide(color: AppColors.accentRed),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    label: const Text('Reject', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentRed,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2,
+                      shadowColor: AppColors.accentRed.withValues(alpha: 0.4),
                     ),
                   ),
                 ),

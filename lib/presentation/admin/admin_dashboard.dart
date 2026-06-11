@@ -37,45 +37,55 @@ class AdminDashboard extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              height: 200,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF0D5C26), Color(0xFF1B8A3C)]),
+                image: const DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'),
+                  fit: BoxFit.cover,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
-                        child: Text(
-                          (auth.displayName.isNotEmpty ? auth.displayName[0] : 'A').toUpperCase(),
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xCC0D5C26), Color(0xCC1B8A3C)]),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
+                          child: Text(
+                            (auth.displayName.isNotEmpty ? auth.displayName[0] : 'A').toUpperCase(),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Welcome, ${auth.displayName}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'Poppins')),
-                            const Text('Super Admin • All Modules', style: TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'Poppins')),
-                          ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Welcome, ${auth.displayName}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'Poppins')),
+                              const Text('Super Admin • All Modules', style: TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'Poppins')),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _MiniStat('Total Records', '${provider.records.length}', Colors.white),
-                      _MiniStat('Pending', '${provider.totalPending}', Colors.white),
-                      _MiniStat('Modules', '${ModuleConfig.moduleIds.length}', Colors.white),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        _MiniStat('Total Records', '${provider.records.length}', Colors.white),
+                        _MiniStat('Pending', '${provider.totalPending}', Colors.white),
+                        _MiniStat('Modules', '${ModuleConfig.moduleIds.length}', Colors.white),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),

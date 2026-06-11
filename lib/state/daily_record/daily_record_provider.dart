@@ -7,7 +7,9 @@ class DailyRecordProvider extends ChangeNotifier {
   final DailyRecordRepository _repo;
 
   DailyRecordProvider({DailyRecordRepository? repo})
-      : _repo = repo ?? DailyRecordRepository();
+      : _repo = repo ?? DailyRecordRepository() {
+    loadAll();
+  }
 
   List<DailyRecord> _records = [];
   bool _isLoading = false;
@@ -88,6 +90,7 @@ class DailyRecordProvider extends ChangeNotifier {
   Future<void> updateRecordStatus(String id, String status, {String? rejectionReason, String? approvedBy}) async {
     try {
       await _repo.updateRecordStatus(id, status, rejectionReason: rejectionReason, approvedBy: approvedBy);
+      notifyListeners();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -97,6 +100,7 @@ class DailyRecordProvider extends ChangeNotifier {
   Future<void> deleteRecord(String id) async {
     try {
       await _repo.deleteRecord(id);
+      notifyListeners();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
