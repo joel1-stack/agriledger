@@ -24,6 +24,7 @@ import 'presentation/shell/main_shell.dart';
 import 'presentation/admin/admin_dashboard.dart';
 import 'presentation/admin/user_management_screen.dart';
 import 'presentation/admin/reports_screen.dart';
+import 'presentation/dairy/screens/dairy_dashboard_screen.dart';
 
 import 'presentation/worker/worker_dashboard.dart';
 import 'presentation/worker/history_screen.dart';
@@ -149,6 +150,10 @@ class AgriLedgerApp extends StatelessWidget {
           initialSheet: args['initialSheet'] ?? 'feed',
           unitId: args['unitId'],
         );
+        break;
+
+      case '/dairy/dashboard':
+        page = const DairyDashboardScreen();
         break;
 
       case '/modules':

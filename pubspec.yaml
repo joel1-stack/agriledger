@@ -40,6 +40,9 @@ dependencies:
   path: ^1.9.1
   connectivity_plus: ^7.1.1
 
+  # Video
+  video_player: ^2.9.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -64,7 +67,8 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/fonts/  # ADDED: fonts folder for proper asset loading
+    - assets/fonts/
+    - assets/animations/
 
   fonts:
     - family: MatheloSans  # CHANGED: Matched to your font family name

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../../../state/daily_record/daily_record_provider.dart';
 import '../../../state/auth/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,8 +8,36 @@ import '../../../core/constants/module_config.dart';
 import '../widgets/poultry_drawer.dart';
 import '../widgets/quick_add_sheet.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late VideoPlayerController _videoController;
+  bool _videoInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoController = VideoPlayerController.asset("assets/images/bacgrund top.mp4");
+    _videoController.setLooping(true);
+    _videoController.setVolume(0);
+    _videoController.initialize().then((_) {
+      if (mounted) {
+        setState(() => _videoInitialized = true);
+        _videoController.play();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _videoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,22 +63,31 @@ class DashboardScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Container(
+            child: SizedBox(
               height: 280,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=800&q=80'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Color(0x40000000)],
-                  ),
-                ),
+              child: Stack(
+                children: [
+                  if (_videoInitialized)
+                    SizedBox.expand(
+                      child: VideoPlayer(_videoController),
+                    )
+                  else
+                    Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Color(0x80000000)],
+                      ),
+                    ),
                 child: SafeArea(
                   bottom: false,
                   child: Padding(
@@ -111,6 +149,8 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -169,7 +209,7 @@ class DashboardScreen extends StatelessWidget {
       _ActionCardData('All Modules', Icons.dashboard_rounded, AppColors.cardGradientGreen, '/modules', 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=80'),
       _ActionCardData('Approvals', Icons.people_rounded, AppColors.cardGradientOrange, '/manager/approvals', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80'),
       _ActionCardData('Poultry', Icons.pets_rounded, AppColors.cardGradientBlue, {'module': 'poultry'}, 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80'),
-      _ActionCardData('Dairy', Icons.agriculture_rounded, AppColors.cardGradientAmber, {'module': 'dairy'}, 'https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?w=400&q=80'),
+      _ActionCardData('Dairy', Icons.agriculture_rounded, AppColors.cardGradientAmber, '/dairy/dashboard', 'https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?w=400&q=80'),
     ];
     if (isSuperAdmin) {
       cards.insert(2, _ActionCardData('User Management', Icons.settings_rounded, const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]), '/admin/users', 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80'));
@@ -229,7 +269,7 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildModuleCards(BuildContext context) {
     const moduleImages = {
       'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80',
-      'dairy': 'https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?w=400&q=80',
+      'dairy': 'https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?w=400&q=80',
       'crops': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80',
       'livestock': 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&q=80',
       'property': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80',

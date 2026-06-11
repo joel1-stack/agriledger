@@ -113,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?auto=format&fit=crop&w=1080&q=80'),
+                  image: NetworkImage('https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?auto=format&fit=crop&w=1080&q=80'),
                   fit: BoxFit.cover,
                 ),
               ),

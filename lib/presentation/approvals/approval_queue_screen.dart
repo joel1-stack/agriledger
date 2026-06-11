@@ -16,13 +16,15 @@ class ApprovalQueueScreen extends StatefulWidget {
 class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
   String _selectedModule = 'all';
   String _selectedSheetType = 'all';
+  String _statusFilter = 'pending';
   final Set<String> _loadingIds = {};
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DailyRecordProvider>();
-    final pending = provider.pendingRecords;
-    final filtered = pending.where((r) {
+    final allRecords = provider.records;
+    final filtered = allRecords.where((r) {
+      if (_statusFilter != 'all' && r.status != _statusFilter) return false;
       if (_selectedModule != 'all' && r.module != _selectedModule) return false;
       if (_selectedSheetType != 'all' && r.sheetType != _selectedSheetType) return false;
       return true;
@@ -31,7 +33,10 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
-        title: const Text('Approval Queue'),
+        backgroundColor: const Color(0xFF1B8A3C),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('Approvals', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Poppins')),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 8),
@@ -40,7 +45,7 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text('${filtered.length} pending', style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Poppins')),
+            child: Text('${filtered.length} records', style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Poppins')),
           ),
         ],
       ),
@@ -79,6 +84,23 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
             ),
           ),
           const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _filterChip('Pending', _statusFilter == 'pending', const Color(0xFFF59E0B)),
+                const SizedBox(width: 6),
+                _filterChip('Approved', _statusFilter == 'approved', const Color(0xFF10B981)),
+                const SizedBox(width: 6),
+                _filterChip('Rejected', _statusFilter == 'rejected', const Color(0xFFEF4444)),
+                const SizedBox(width: 6),
+                _filterChip('All', _statusFilter == 'all', const Color(0xFF64748B)),
+                const Spacer(),
+                Text('${filtered.length}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF64748B), fontFamily: 'Poppins')),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
           Expanded(
             child: filtered.isEmpty
                 ? Center(
@@ -107,6 +129,20 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _filterChip(String label, bool selected, Color color) {
+    return GestureDetector(
+      onTap: () => setState(() => _statusFilter = selected ? _statusFilter : label.toLowerCase()),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? color : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: selected ? Colors.white : const Color(0xFF64748B), fontFamily: 'Poppins')),
       ),
     );
   }
@@ -194,7 +230,7 @@ class _ApprovalCard extends StatelessWidget {
 
     const moduleImages = {
       'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&q=80',
-      'dairy': 'https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?w=200&q=80',
+      'dairy': 'https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?w=200&q=80',
       'crops': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=200&q=80',
       'livestock': 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=200&q=80',
       'property': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=200&q=80',

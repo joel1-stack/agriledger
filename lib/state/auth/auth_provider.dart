@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/models/user_model.dart';
 import '../../services/notification_service.dart';
@@ -101,6 +102,25 @@ class AuthProvider extends ChangeNotifier {
       );
       _status = AuthStatus.authenticated;
       _firebaseUser = cred.user;
+      _isLoading = false; notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _error = _handleAuthError(e);
+    } catch (e) {
+      _error = e.toString();
+    }
+    _isLoading = false; notifyListeners();
+    return false;
+  }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    _isLoading = true; _error = null; notifyListeners();
+    try {
+      final user = _firebaseUser;
+      if (user == null) throw Exception('Not authenticated');
+      final cred = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
       _isLoading = false; notifyListeners();
       return true;
     } on FirebaseAuthException catch (e) {
