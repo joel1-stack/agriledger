@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/constants/module_config.dart';
 import '../../state/poultry/poultry_provider.dart';
 import '../../state/daily_record/daily_record_provider.dart';
-import '../../data/models/poultry/monthly_summary.dart';
+import '../../data/models/daily_record_model.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -12,9 +13,12 @@ class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.watch<PoultryProvider>();
-    final records = context.watch<DailyRecordProvider>();
-    final summaries = p.monthlySummaries;
-    final hasData = summaries.isNotEmpty;
+    final dr = context.watch<DailyRecordProvider>();
+    final allRecords = dr.records.where((r) => r.status == 'approved').toList();
+
+    final monthlyData = _computeMonthlyData(allRecords);
+    final summary = _computeSummary(allRecords);
+    final moduleTotals = _computeModuleTotals(allRecords);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -29,17 +33,15 @@ class ReportsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSummaryCards(p),
+            _buildSummaryCards(summary),
             const SizedBox(height: 20),
-            _buildIncomeExpenseChart(summaries),
+            _buildIncomeExpenseChart(monthlyData),
             const SizedBox(height: 16),
-            _buildProfitTrendChart(summaries),
+            _buildProfitTrendChart(monthlyData),
             const SizedBox(height: 16),
-            _buildExpensePieChart(summaries),
+            _buildModulePieChart(moduleTotals),
             const SizedBox(height: 16),
-            _buildDairyPieChart(records),
-            const SizedBox(height: 16),
-            _buildFinancialBreakdown(p),
+            _buildAllModulesBreakdown(moduleTotals),
             const SizedBox(height: 16),
             _buildProductionStats(p),
           ],
@@ -48,7 +50,73 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCards(PoultryProvider p) {
+  // ── Data helpers ──────────────────────────────────────────────────────────
+
+  double _extractAmount(Map<String, dynamic> flat) {
+    final candidates = ['totalCost', 'totalRevenue', 'amount', 'cost', 'netPay', 'revenue', 'income', 'value', 'total', 'price'];
+    for (final key in candidates) {
+      final v = flat[key];
+      if (v != null) {
+        final n = double.tryParse('$v');
+        if (n != null && n > 0) return n;
+      }
+    }
+    for (final entry in flat.entries) {
+      final n = double.tryParse('${entry.value}');
+      if (n != null && n > 0) return n;
+    }
+    return 0;
+  }
+
+  bool _isExpenseSheet(String sheet) {
+    return ['feed', 'vet', 'labour', 'housing', 'overheads', 'expense', 'cost', 'feed_consumption', 'maintenance', 'fuel', 'supplies'].contains(sheet);
+  }
+
+  Map<String, _MonthData> _computeMonthlyData(List<DailyRecord> records) {
+    final map = <String, _MonthData>{};
+    for (final r in records) {
+      final month = '${r.date.year}-${r.date.month.toString().padLeft(2, '0')}';
+      final amt = _extractAmount(r.toFlatMap());
+      if (amt <= 0) continue;
+      final data = map.putIfAbsent(month, () => _MonthData(month, 0, 0));
+      if (_isExpenseSheet(r.sheetType)) {
+        data.expenses += amt;
+      } else {
+        data.income += amt;
+      }
+    }
+    return map;
+  }
+
+  _Summary _computeSummary(List<DailyRecord> records) {
+    double income = 0, expenses = 0;
+    for (final r in records) {
+      final amt = _extractAmount(r.toFlatMap());
+      if (amt <= 0) continue;
+      if (_isExpenseSheet(r.sheetType)) expenses += amt;
+      else income += amt;
+    }
+    return _Summary(income, expenses);
+  }
+
+  Map<String, _ModuleTotal> _computeModuleTotals(List<DailyRecord> records) {
+    final map = <String, _ModuleTotal>{};
+    for (final r in records) {
+      final amt = _extractAmount(r.toFlatMap());
+      if (amt <= 0) continue;
+      final mod = r.module;
+      final data = map.putIfAbsent(mod, () => _ModuleTotal(mod, 0, 0));
+      if (_isExpenseSheet(r.sheetType)) data.expenses += amt;
+      else data.income += amt;
+    }
+    return map;
+  }
+
+  // ── Builders ──────────────────────────────────────────────────────────────
+
+  Widget _buildSummaryCards(_Summary s) {
+    final profit = s.income - s.expenses;
+    final margin = s.income > 0 ? (profit / s.income * 100) : 0.0;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -67,25 +135,23 @@ class ReportsScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            _statRow('Total Revenue', 'KES ${_fmt(p.totalRevenue)}', const Color(0xFF10B981)),
+            _statRow('Total Revenue', 'KES ${_fmt(s.income)}', const Color(0xFF10B981)),
             const SizedBox(height: 6),
-            _statRow('Total Expenses', 'KES ${_fmt(p.totalExpenses)}', const Color(0xFFEF4444)),
+            _statRow('Total Expenses', 'KES ${_fmt(s.expenses)}', const Color(0xFFEF4444)),
             const Divider(color: Colors.white24, height: 16),
-            _statRow('Net Profit', 'KES ${_fmt(p.netProfit)}', p.netProfit >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444)),
-            _statRow('Profit Margin', '${p.profitMargin.toStringAsFixed(1)}%', const Color(0xFF0EA5E9)),
+            _statRow('Net Profit', 'KES ${_fmt(profit)}', profit >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444)),
+            _statRow('Profit Margin', '${margin.toStringAsFixed(1)}%', const Color(0xFF0EA5E9)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildIncomeExpenseChart(List<MonthlySummary> summaries) {
-    if (summaries.isEmpty) {
-      return _emptyChartCard('Income vs Expenses', Icons.bar_chart_rounded, const Color(0xFF10B981));
-    }
-    final sorted = List<MonthlySummary>.from(summaries)..sort((a, b) => a.month.compareTo(b.month));
-    final labels = sorted.map((s) => s.month.length >= 3 ? s.month.substring(0, 3) : s.month).toList();
-    final maxVal = sorted.fold<double>(0, (m, s) => [m, s.totalIncome, s.totalExpenses].reduce((a, b) => a > b ? a : b));
+  Widget _buildIncomeExpenseChart(Map<String, _MonthData> monthly) {
+    if (monthly.isEmpty) return _emptyChartCard('Income vs Expenses', Icons.bar_chart_rounded, const Color(0xFF10B981));
+    final sorted = monthly.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final labels = sorted.map((e) => e.key.substring(5)).toList();
+    final maxVal = sorted.fold<double>(0, (m, e) => [m, e.value.income, e.value.expenses].reduce((a, b) => a > b ? a : b));
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -104,28 +170,24 @@ class ReportsScreen extends StatelessWidget {
           const SizedBox(height: 20),
           SizedBox(
             height: 220,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxVal * 1.2,
-                barTouchData: BarTouchData(enabled: true, touchTooltipData: BarTouchTooltipData(tooltipBorderRadius: BorderRadius.circular(8), getTooltipItem: (g, gIndex, bar, barIndex) => BarTooltipItem(bar.toY.toStringAsFixed(0), const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Poppins')))),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, m) => v.toInt() < labels.length ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(labels[v.toInt()], style: const TextStyle(fontSize: 10, fontFamily: 'Poppins', color: Color(0xFF94A3B8)))) : const SizedBox())),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (v, m) => Text(_fmt(v), style: const TextStyle(fontSize: 9, fontFamily: 'Poppins', color: Color(0xFF94A3B8))))),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: maxVal > 0 ? maxVal / 4 : 1, getDrawingHorizontalLine: (v) => FlLine(color: const Color(0xFFF1F5F9), strokeWidth: 1)),
-                borderData: FlBorderData(show: false),
-                barGroups: List.generate(sorted.length, (i) {
-                  return BarChartGroupData(x: i, barRods: [
-                    BarChartRodData(toY: sorted[i].totalIncome, color: const Color(0xFF10B981), width: 10, borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4))),
-                    BarChartRodData(toY: sorted[i].totalExpenses, color: const Color(0xFFEF4444), width: 10, borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4))),
-                  ]);
-                }),
+            child: BarChart(BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: maxVal * 1.2,
+              barTouchData: BarTouchData(enabled: true, touchTooltipData: BarTouchTooltipData(tooltipBorderRadius: BorderRadius.circular(8), getTooltipItem: (g, gIndex, bar, barIndex) => BarTooltipItem(_fmt(bar.toY), const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Poppins')))),
+              titlesData: FlTitlesData(
+                show: true,
+                bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, m) => v.toInt() < labels.length ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(labels[v.toInt()], style: const TextStyle(fontSize: 10, fontFamily: 'Poppins', color: Color(0xFF94A3B8)))) : const SizedBox())),
+                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (v, m) => Text(_fmt(v), style: const TextStyle(fontSize: 9, fontFamily: 'Poppins', color: Color(0xFF94A3B8))))),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
-            ),
+              gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: maxVal > 0 ? maxVal / 4 : 1, getDrawingHorizontalLine: (v) => FlLine(color: const Color(0xFFF1F5F9), strokeWidth: 1)),
+              borderData: FlBorderData(show: false),
+              barGroups: List.generate(sorted.length, (i) => BarChartGroupData(x: i, barRods: [
+                BarChartRodData(toY: sorted[i].value.income, color: const Color(0xFF10B981), width: 10, borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4))),
+                BarChartRodData(toY: sorted[i].value.expenses, color: const Color(0xFFEF4444), width: 10, borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4))),
+              ])),
+            )),
           ),
           const SizedBox(height: 8),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -138,14 +200,13 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfitTrendChart(List<MonthlySummary> summaries) {
-    if (summaries.isEmpty) {
-      return _emptyChartCard('Profit Trend', Icons.trending_up_rounded, const Color(0xFF8B5CF6));
-    }
-    final sorted = List<MonthlySummary>.from(summaries)..sort((a, b) => a.month.compareTo(b.month));
-    final labels = sorted.map((s) => s.month.length >= 3 ? s.month.substring(0, 3) : s.month).toList();
-    final minVal = sorted.fold<double>(0, (m, s) => s.netPL < m ? s.netPL : m);
-    final maxVal = sorted.fold<double>(0, (m, s) => s.netPL > m ? s.netPL : m);
+  Widget _buildProfitTrendChart(Map<String, _MonthData> monthly) {
+    if (monthly.isEmpty) return _emptyChartCard('Profit Trend', Icons.trending_up_rounded, const Color(0xFF8B5CF6));
+    final sorted = monthly.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final labels = sorted.map((e) => e.key.substring(5)).toList();
+    final profits = sorted.map((e) => e.value.income - e.value.expenses).toList();
+    final minVal = profits.fold<double>(0, (m, v) => v < m ? v : m);
+    final maxVal = profits.fold<double>(0, (m, v) => v > m ? v : m);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -164,33 +225,28 @@ class ReportsScreen extends StatelessWidget {
           const SizedBox(height: 20),
           SizedBox(
             height: 200,
-            child: LineChart(
-              LineChartData(
-                minY: minVal < 0 ? minVal * 1.3 : 0,
-                maxY: maxVal > 0 ? maxVal * 1.3 : 1,
-                lineTouchData: LineTouchData(enabled: true, touchTooltipData: LineTouchTooltipData(tooltipBorderRadius: BorderRadius.circular(8), getTooltipItems: (spots) => spots.map((s) => LineTooltipItem('KES ${_fmt(s.y)}', const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Poppins'))).toList())),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, m) => v.toInt() < labels.length ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(labels[v.toInt()], style: const TextStyle(fontSize: 10, fontFamily: 'Poppins', color: Color(0xFF94A3B8)))) : const SizedBox())),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (v, m) => Text(_fmt(v), style: const TextStyle(fontSize: 9, fontFamily: 'Poppins', color: Color(0xFF94A3B8))))),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: maxVal > 0 ? (maxVal - minVal) / 4 : 1, getDrawingHorizontalLine: (v) => FlLine(color: const Color(0xFFF1F5F9), strokeWidth: 1)),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: List.generate(sorted.length, (i) => FlSpot(i.toDouble(), sorted[i].netPL)),
-                    isCurved: true,
-                    color: const Color(0xFF8B5CF6),
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(show: true, getDotPainter: (s, percent, bar, index) => FlDotCirclePainter(radius: 4, color: Colors.white, strokeWidth: 2.5, strokeColor: const Color(0xFF8B5CF6))),
-                    belowBarData: BarAreaData(show: true, color: const Color(0xFF8B5CF6).withValues(alpha: 0.1)),
-                  ),
-                ],
+            child: LineChart(LineChartData(
+              minY: minVal < 0 ? minVal * 1.3 : 0,
+              maxY: maxVal > 0 ? maxVal * 1.3 : 1,
+              lineTouchData: LineTouchData(enabled: true, touchTooltipData: LineTouchTooltipData(tooltipBorderRadius: BorderRadius.circular(8), getTooltipItems: (spots) => spots.map((s) => LineTooltipItem('KES ${_fmt(s.y)}', const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Poppins'))).toList())),
+              titlesData: FlTitlesData(
+                show: true,
+                bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, m) => v.toInt() < labels.length ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(labels[v.toInt()], style: const TextStyle(fontSize: 10, fontFamily: 'Poppins', color: Color(0xFF94A3B8)))) : const SizedBox())),
+                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (v, m) => Text(_fmt(v), style: const TextStyle(fontSize: 9, fontFamily: 'Poppins', color: Color(0xFF94A3B8))))),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
-            ),
+              gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: maxVal > 0 ? (maxVal - minVal) / 4 : 1, getDrawingHorizontalLine: (v) => FlLine(color: const Color(0xFFF1F5F9), strokeWidth: 1)),
+              borderData: FlBorderData(show: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: List.generate(profits.length, (i) => FlSpot(i.toDouble(), profits[i])),
+                  isCurved: true, color: const Color(0xFF8B5CF6), barWidth: 3, isStrokeCapRound: true,
+                  dotData: FlDotData(show: true, getDotPainter: (s, percent, bar, index) => FlDotCirclePainter(radius: 4, color: Colors.white, strokeWidth: 2.5, strokeColor: const Color(0xFF8B5CF6))),
+                  belowBarData: BarAreaData(show: true, color: const Color(0xFF8B5CF6).withValues(alpha: 0.1)),
+                ),
+              ],
+            )),
           ),
           const SizedBox(height: 4),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -201,24 +257,12 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExpensePieChart(List<MonthlySummary> summaries) {
-    if (summaries.isEmpty) {
-      return _emptyChartCard('Expense Breakdown', Icons.pie_chart_rounded, const Color(0xFFF59E0B));
-    }
-    final totalFeed = summaries.fold<double>(0, (s, m) => s + m.feedCost);
-    final totalVet = summaries.fold<double>(0, (s, m) => s + m.vetCost);
-    final totalLabour = summaries.fold<double>(0, (s, m) => s + m.labour);
-    final totalHousing = summaries.fold<double>(0, (s, m) => s + m.housing);
-    final totalOverhead = summaries.fold<double>(0, (s, m) => s + m.overheads);
-    final grandTotal = totalFeed + totalVet + totalLabour + totalHousing + totalOverhead;
+  Widget _buildModulePieChart(Map<String, _ModuleTotal> moduleTotals) {
+    if (moduleTotals.isEmpty) return _emptyChartCard('Revenue by Module', Icons.pie_chart_rounded, const Color(0xFFF59E0B));
+    final total = moduleTotals.values.fold<double>(0, (s, m) => s + m.income);
+    if (total <= 0) return _emptyChartCard('Revenue by Module', Icons.pie_chart_rounded, const Color(0xFFF59E0B));
 
-    final sections = [
-      _PieSection('Feed', totalFeed, const Color(0xFFF59E0B)),
-      _PieSection('Vet', totalVet, const Color(0xFFEF4444)),
-      _PieSection('Labour', totalLabour, const Color(0xFF3B82F6)),
-      _PieSection('Housing', totalHousing, const Color(0xFF0EA5E9)),
-      _PieSection('Overhead', totalOverhead, const Color(0xFF8B5CF6)),
-    ];
+    final sorted = moduleTotals.entries.toList()..sort((a, b) => b.value.income.compareTo(a.value.income));
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -232,40 +276,36 @@ class ReportsScreen extends StatelessWidget {
           Row(children: [
             Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.pie_chart_rounded, size: 16, color: Color(0xFFF59E0B))),
             const SizedBox(width: 8),
-            const Text('Expense Breakdown', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
+            const Text('Revenue by Module', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
           ]),
           const SizedBox(height: 16),
           Row(
             children: [
               SizedBox(
-                height: 160,
-                width: 160,
-                child: PieChart(
-                  PieChartData(
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 36,
-                    sections: sections.where((s) => s.value > 0).map((s) => PieChartSectionData(
-                      value: s.value,
-                      color: s.color,
-                      radius: 50,
-                      title: grandTotal > 0 ? '${(s.value / grandTotal * 100).toStringAsFixed(0)}%' : '0%',
-                      titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins'),
-                    )).toList(),
-                  ),
-                ),
+                height: 160, width: 160,
+                child: PieChart(PieChartData(
+                  sectionsSpace: 2, centerSpaceRadius: 36,
+                  sections: sorted.map((e) => PieChartSectionData(
+                    value: e.value.income,
+                    color: ModuleConfig.moduleColor(e.key),
+                    radius: 50,
+                    title: '${(e.value.income / total * 100).toStringAsFixed(0)}%',
+                    titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins'),
+                  )).toList(),
+                )),
               ),
               const SizedBox(width: 24),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: sections.where((s) => s.value > 0).map((s) => Padding(
+                  children: sorted.map((e) => Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Row(
                       children: [
-                        Container(width: 10, height: 10, decoration: BoxDecoration(color: s.color, shape: BoxShape.circle)),
+                        Container(width: 10, height: 10, decoration: BoxDecoration(color: ModuleConfig.moduleColor(e.key), shape: BoxShape.circle)),
                         const SizedBox(width: 6),
-                        Expanded(child: Text(s.label, style: const TextStyle(fontSize: 12, fontFamily: 'Poppins', color: Color(0xFF475569)))),
-                        Text('${(s.value / grandTotal * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
+                        Expanded(child: Text(ModuleConfig.moduleLabel(e.key), style: const TextStyle(fontSize: 12, fontFamily: 'Poppins', color: Color(0xFF475569)))),
+                        Text('${(e.value.income / total * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
                       ],
                     ),
                   )).toList(),
@@ -278,105 +318,10 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDairyPieChart(DailyRecordProvider records) {
-    final dairyRecords = records.recordsByModule('dairy');
-    if (dairyRecords.isEmpty) {
-      return _emptyChartCard('Dairy Expenses', Icons.agriculture_rounded, const Color(0xFF10B981));
-    }
-    double feed = 0, vet = 0, labour = 0, other = 0;
-    for (final r in dairyRecords) {
-      final f = r.toFlatMap();
-      if (r.sheetType == 'feed') feed += double.tryParse('${f['totalCost'] ?? f['cost'] ?? 0}') ?? 0;
-      else if (r.sheetType == 'vet') vet += double.tryParse('${f['cost'] ?? f['totalCost'] ?? 0}') ?? 0;
-      else if (r.sheetType == 'labour') labour += double.tryParse('${f['netPay'] ?? f['cost'] ?? 0}') ?? 0;
-      else other += double.tryParse('${f['amount'] ?? f['totalCost'] ?? 0}') ?? 0;
-    }
-    final grandTotal = feed + vet + labour + other;
-    if (grandTotal <= 0) return _emptyChartCard('Dairy Expenses', Icons.agriculture_rounded, const Color(0xFF10B981));
+  Widget _buildAllModulesBreakdown(Map<String, _ModuleTotal> moduleTotals) {
+    if (moduleTotals.isEmpty) return _emptyChartCard('Module Breakdown', Icons.account_balance_rounded, const Color(0xFF3B82F6));
+    final sorted = moduleTotals.entries.toList()..sort((a, b) => (b.value.income + b.value.expenses).compareTo(a.value.income + a.value.expenses));
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.agriculture_rounded, size: 16, color: Color(0xFF10B981))),
-            const SizedBox(width: 8),
-            const Text('Dairy Cost Breakdown', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
-          ]),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              SizedBox(
-                height: 160, width: 160,
-                child: PieChart(PieChartData(
-                  sectionsSpace: 2, centerSpaceRadius: 36,
-                  sections: [
-                    PieChartSectionData(value: feed, color: const Color(0xFFF59E0B), radius: 50, title: grandTotal > 0 ? '${(feed / grandTotal * 100).toStringAsFixed(0)}%' : '0', titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
-                    PieChartSectionData(value: vet, color: const Color(0xFFEF4444), radius: 50, title: grandTotal > 0 ? '${(vet / grandTotal * 100).toStringAsFixed(0)}%' : '0', titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
-                    PieChartSectionData(value: labour, color: const Color(0xFF3B82F6), radius: 50, title: grandTotal > 0 ? '${(labour / grandTotal * 100).toStringAsFixed(0)}%' : '0', titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
-                    PieChartSectionData(value: other, color: const Color(0xFF10B981), radius: 50, title: grandTotal > 0 ? '${(other / grandTotal * 100).toStringAsFixed(0)}%' : '0', titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
-                  ],
-                )),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (feed > 0) _dairyLegend('Feed', feed, grandTotal, const Color(0xFFF59E0B)),
-                    if (vet > 0) _dairyLegend('Vet', vet, grandTotal, const Color(0xFFEF4444)),
-                    if (labour > 0) _dairyLegend('Labour', labour, grandTotal, const Color(0xFF3B82F6)),
-                    if (other > 0) _dairyLegend('Other', other, grandTotal, const Color(0xFF10B981)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dairyLegend(String label, double value, double total, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 6),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 12, fontFamily: 'Poppins', color: Color(0xFF475569)))),
-          Text('${(value / total * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
-        ],
-      ),
-    );
-  }
-
-  Widget _emptyChartCard(String title, IconData icon, Color color) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 40, color: color.withValues(alpha: 0.3)),
-          const SizedBox(height: 8),
-          Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: const Color(0xFF0F172A))),
-          const SizedBox(height: 4),
-          const Text('Add records to see chart', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontFamily: 'Poppins')),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFinancialBreakdown(PoultryProvider p) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -388,16 +333,44 @@ class ReportsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.receipt_long_rounded, size: 16, color: Color(0xFFF59E0B))),
+            Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFF3B82F6).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.account_balance_rounded, size: 16, color: Color(0xFF3B82F6))),
             const SizedBox(width: 8),
-            const Text('Financial Breakdown', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
+            const Text('All Modules Breakdown', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
           ]),
           const SizedBox(height: 12),
-          _ReportRow('Feed Costs', 'KES ${_fmt(p.totalFeedCost)}', const Color(0xFFF59E0B)),
-          _ReportRow('Vet Costs', 'KES ${_fmt(p.totalVetCost)}', const Color(0xFFEF4444)),
-          _ReportRow('Labour', 'KES ${_fmt(p.totalLabourCost)}', const Color(0xFF3B82F6)),
-          _ReportRow('Housing', 'KES ${_fmt(p.totalHousingCost)}', const Color(0xFF0EA5E9)),
-          _ReportRow('Overheads', 'KES ${_fmt(p.totalOverheadCost)}', const Color(0xFF8B5CF6)),
+          ...sorted.map((e) => _moduleRow(e.key, e.value)),
+        ],
+      ),
+    );
+  }
+
+  Widget _moduleRow(String module, _ModuleTotal t) {
+    final color = ModuleConfig.moduleColor(module);
+    final label = ModuleConfig.moduleLabel(module);
+    final profit = t.income - t.expenses;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        children: [
+          Icon(ModuleConfig.moduleIcon(module), size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: color)),
+                const SizedBox(height: 2),
+                Text('Inc: KES ${_fmt(t.income)}  Exp: KES ${_fmt(t.expenses)}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8), fontFamily: 'Poppins')),
+              ],
+            ),
+          ),
+          Text('KES ${_fmt(profit)}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: profit >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444))),
         ],
       ),
     );
@@ -417,7 +390,7 @@ class ReportsScreen extends StatelessWidget {
           Row(children: [
             Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFF0EA5E9).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.egg_rounded, size: 16, color: Color(0xFF0EA5E9))),
             const SizedBox(width: 8),
-            const Text('Production', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
+            const Text('Poultry Production', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
           ]),
           const SizedBox(height: 12),
           _ReportRow('Active Birds', '${p.totalActiveBirds}', const Color(0xFF10B981)),
@@ -447,14 +420,44 @@ class ReportsScreen extends StatelessWidget {
     ]);
   }
 
+  Widget _emptyChartCard(String title, IconData icon, Color color) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white, borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 40, color: color.withValues(alpha: 0.3)),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
+          const SizedBox(height: 4),
+          const Text('Add records to see chart', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontFamily: 'Poppins')),
+        ],
+      ),
+    );
+  }
+
   String _fmt(double v) => v >= 1000000 ? '${(v / 1000000).toStringAsFixed(1)}M' : v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toStringAsFixed(0);
 }
 
-class _PieSection {
-  final String label;
-  final double value;
-  final Color color;
-  const _PieSection(this.label, this.value, this.color);
+class _MonthData {
+  final String month;
+  double income, expenses;
+  _MonthData(this.month, this.income, this.expenses);
+}
+
+class _Summary {
+  final double income, expenses;
+  _Summary(this.income, this.expenses);
+}
+
+class _ModuleTotal {
+  final String module;
+  double income, expenses;
+  _ModuleTotal(this.module, this.income, this.expenses);
 }
 
 class _ReportRow extends StatelessWidget {

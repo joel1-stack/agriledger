@@ -272,6 +272,35 @@ service cloud.firestore {
       allow delete: if canDeleteOwned(resource.data.userId);
     }
 
+    match /feed_expenses/{docId} {
+      allow read, write: if canRead();
+    }
+    match /vet_health/{docId} {
+      allow read, write: if canRead();
+    }
+    match /labour_records/{docId} {
+      allow read, write: if canRead();
+    }
+    match /housing_expenses/{docId} {
+      allow read, write: if canRead();
+    }
+    match /overhead_expenses/{docId} {
+      allow read, write: if canRead();
+    }
+    match /poultry_sales/{docId} {
+      allow read, write: if canRead();
+    }
+    match /egg_production/{docId} {
+      allow read, write: if canRead();
+    }
+    match /flock_batches/{docId} {
+      allow read, write: if canRead();
+    }
+    match /poultryMonthlySummary/{docId} {
+      allow read: if canRead();
+      allow write: if isAuthenticated();
+    }
+
     match /analytics/{analyticsId} {
       allow read: if canRead();
       allow create: if canWrite() && request.resource.data.userId == request.auth.uid;
