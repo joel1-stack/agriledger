@@ -47,7 +47,7 @@ class DashboardScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Color(0x55000000)],
+                    colors: [Colors.transparent, Color(0x30000000)],
                   ),
                 ),
                 child: SafeArea(
@@ -69,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Color(0x40FFFFFF),
+                                color: Color(0x25FFFFFF),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -270,7 +270,7 @@ class _QuickStat extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: const Color(0x30FFFFFF), borderRadius: BorderRadius.circular(14)),
+        decoration: BoxDecoration(color: const Color(0xFFFFFF).withValues(alpha: 0.18), borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

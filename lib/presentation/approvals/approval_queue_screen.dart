@@ -16,6 +16,7 @@ class ApprovalQueueScreen extends StatefulWidget {
 class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
   String _selectedModule = 'all';
   String _selectedSheetType = 'all';
+  final Set<String> _loadingIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +99,7 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
                       final r = filtered[i];
                       return _ApprovalCard(
                         record: r,
+                        isLoading: _loadingIds.contains(r.id),
                         onApprove: () => _approve(r),
                         onReject: () => _reject(r),
                       );
@@ -122,10 +124,12 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
   }
 
   void _approve(dynamic r) async {
+    setState(() => _loadingIds.add(r.id));
     final provider = context.read<DailyRecordProvider>();
     final auth = context.read<AuthProvider>();
     await provider.updateRecordStatus(r.id, 'approved', approvedBy: auth.userId);
     if (mounted) {
+      setState(() => _loadingIds.remove(r.id));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Approved'), backgroundColor: AppColors.primaryGreen),
       );
@@ -138,9 +142,11 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
       builder: (_) => _RejectDialog(),
     );
     if (reason == null) return;
+    setState(() => _loadingIds.add(r.id));
     final provider = context.read<DailyRecordProvider>();
     await provider.updateRecordStatus(r.id, 'rejected', rejectionReason: reason);
     if (mounted) {
+      setState(() => _loadingIds.remove(r.id));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Rejected'), backgroundColor: AppColors.accentRed),
       );
@@ -152,10 +158,11 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
 
 class _ApprovalCard extends StatelessWidget {
   final dynamic record;
+  final bool isLoading;
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
-  const _ApprovalCard({required this.record, required this.onApprove, required this.onReject});
+  const _ApprovalCard({required this.record, this.isLoading = false, required this.onApprove, required this.onReject});
 
   @override
   Widget build(BuildContext context) {
@@ -218,35 +225,39 @@ class _ApprovalCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: onApprove,
-                    icon: const Icon(Icons.check_circle_rounded, size: 18),
-                    label: const Text('Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryGreen,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 2,
-                      shadowColor: AppColors.primaryGreen.withValues(alpha: 0.4),
-                    ),
-                  ),
+                  child: isLoading
+                      ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+                      : ElevatedButton.icon(
+                          onPressed: onApprove,
+                          icon: const Icon(Icons.check_circle_rounded, size: 18),
+                          label: const Text('Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
+                            shadowColor: AppColors.primaryGreen.withValues(alpha: 0.4),
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: onReject,
-                    icon: const Icon(Icons.cancel_rounded, size: 18),
-                    label: const Text('Reject', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accentRed,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 2,
-                      shadowColor: AppColors.accentRed.withValues(alpha: 0.4),
-                    ),
-                  ),
+                  child: isLoading
+                      ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+                      : ElevatedButton.icon(
+                          onPressed: onReject,
+                          icon: const Icon(Icons.cancel_rounded, size: 18),
+                          label: const Text('Reject', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accentRed,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
+                            shadowColor: AppColors.accentRed.withValues(alpha: 0.4),
+                          ),
+                        ),
                 ),
               ],
             ),

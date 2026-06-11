@@ -16,20 +16,22 @@ class AppColors {
   static const Color accentTeal = Color(0xFF14B8A6);
   static const Color accentPink = Color(0xFFEC4899);
   static const Color accentLime = Color(0xFF84CC16);
+  static const Color accentRose = Color(0xFFF43F5E);
+  static const Color accentSky = Color(0xFF0284C7);
+  static const Color accentEmerald = Color(0xFF10B981);
 
   static const Color backgroundGrey = Color(0xFFF0FBF4);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
-  static const Color cardWhite = Color(0xFFFFFFFF);
 
   static const Color textDark = Color(0xFF0D2B1A);
-  static const Color textMedium = Color(0xFF2D5A3D);
-  static const Color textLight = Color(0xFF5F8D6B);
-  static const Color textMuted = Color(0xFF9CC4A8);
+  static const Color textMedium = Color(0xFF1B5E37);
+  static const Color textLight = Color(0xFF4A7C5C);
+  static const Color textMuted = Color(0xFF8AB89A);
 
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF27AE60), Color(0xFF1B8A3C)],
+    colors: [Color(0xFF2ECC71), Color(0xFF1B8A3C)],
   );
 
   static const LinearGradient splashGradient = LinearGradient(
@@ -53,13 +55,13 @@ class AppColors {
   static const LinearGradient cardGradientBlue = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
+    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
   );
 
   static const LinearGradient cardGradientAmber = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFFD54F), Color(0xFFFFC107)],
+    colors: [Color(0xFFFFD54F), Color(0xFFF59E0B)],
   );
 
   static const LinearGradient cardGradientPink = LinearGradient(
@@ -71,7 +73,19 @@ class AppColors {
   static const LinearGradient cardGradientPurple = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFA78BFA), Color(0xFF8B5CF6)],
+    colors: [Color(0xFFA78BFA), Color(0xFF7C3AED)],
+  );
+
+  static const LinearGradient cardGradientTeal = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+  );
+
+  static const LinearGradient cardGradientRose = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFB7185), Color(0xFFF43F5E)],
   );
 }
 

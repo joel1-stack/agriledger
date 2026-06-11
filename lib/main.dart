@@ -20,6 +20,7 @@ import 'presentation/poultry/screens/flock_register_screen.dart';
 import 'presentation/sheets/sheet_screen.dart';
 import 'presentation/sheets/module_selector_screen.dart';
 
+import 'presentation/shell/main_shell.dart';
 import 'presentation/admin/admin_dashboard.dart';
 import 'presentation/admin/user_management_screen.dart';
 import 'presentation/admin/reports_screen.dart';
@@ -199,9 +200,7 @@ class _RoleRouter extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     if (!auth.isAuthenticated) return const LoginScreen();
-    if (auth.isSuperAdmin) return const AdminDashboard();
-    if (auth.isManager) return const ApprovalQueueScreen();
-    return const WorkerDashboard();
+    return const MainShell();
   }
 }
 
