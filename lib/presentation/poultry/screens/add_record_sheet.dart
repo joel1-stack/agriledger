@@ -10,7 +10,7 @@ import '../../../state/auth/auth_provider.dart';
 
 const _moduleImages = {
   'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80',
-  'dairy': 'https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?auto=format&fit=crop&w=600&q=80',
+  'dairy': 'https://images.unsplash.com/photo-1570042225831-d98af757d3e2?auto=format&fit=crop&w=600&q=80',
   'crops': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
   'livestock': 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80',
   'property': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80',

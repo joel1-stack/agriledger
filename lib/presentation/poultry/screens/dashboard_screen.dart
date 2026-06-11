@@ -209,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _ActionCardData('All Modules', Icons.dashboard_rounded, AppColors.cardGradientGreen, '/modules', 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=80'),
       _ActionCardData('Approvals', Icons.people_rounded, AppColors.cardGradientOrange, '/manager/approvals', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80'),
       _ActionCardData('Poultry', Icons.pets_rounded, AppColors.cardGradientBlue, {'module': 'poultry'}, 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80'),
-      _ActionCardData('Dairy', Icons.agriculture_rounded, AppColors.cardGradientAmber, '/dairy/dashboard', 'https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?w=400&q=80'),
+      _ActionCardData('Dairy', Icons.agriculture_rounded, AppColors.cardGradientAmber, {'module': 'dairy'}, 'https://images.unsplash.com/photo-1570042225831-d98af757d3e2?w=400&q=80'),
     ];
     if (isSuperAdmin) {
       cards.insert(2, _ActionCardData('User Management', Icons.settings_rounded, const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]), '/admin/users', 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80'));
@@ -269,7 +269,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildModuleCards(BuildContext context) {
     const moduleImages = {
       'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80',
-      'dairy': 'https://images.unsplash.com/photo-1523475496151-48c8c6e8dd3a?w=400&q=80',
+      'dairy': 'https://images.unsplash.com/photo-1570042225831-d98af757d3e2?w=400&q=80',
       'crops': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80',
       'livestock': 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&q=80',
       'property': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80',

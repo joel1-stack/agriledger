@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../state/auth/auth_provider.dart';
 
@@ -16,6 +17,9 @@ class _LoginScreenState extends State<LoginScreen>
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  late VideoPlayerController _videoController;
+  bool _videoInitialized = false;
+
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -27,6 +31,16 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
+    _videoController = VideoPlayerController.asset("assets/images/bacgrund top.mp4");
+    _videoController.setLooping(true);
+    _videoController.setVolume(0);
+    _videoController.initialize().then((_) {
+      if (mounted) {
+        setState(() => _videoInitialized = true);
+        _videoController.play();
+      }
+    });
+
     _fadeController =
         AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
     _slideController =
@@ -53,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   void dispose() {
+    _videoController.dispose();
     _fadeController.dispose();
     _slideController.dispose();
     _emailController.dispose();
@@ -86,17 +101,32 @@ class _LoginScreenState extends State<LoginScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // ── Full screen background: online image ──
+          // ── Full screen background: video ──
           Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80'),
+            child: _videoInitialized
+                ? const SizedBox.expand()
+                : Container(
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+          ),
+          if (_videoInitialized)
+            Positioned.fill(
+              child: SizedBox.expand(
+                child: FittedBox(
                   fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _videoController.value.size.width,
+                    height: _videoController.value.size.height,
+                    child: VideoPlayer(_videoController),
+                  ),
                 ),
               ),
             ),
-          ),
 
           // ── Top header section ──
           Positioned(
