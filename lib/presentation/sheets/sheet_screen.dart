@@ -62,6 +62,7 @@ class _SheetScreenState extends State<SheetScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<DailyRecordProvider>();
     final isEditable = context.canAddEdit;
+    final color = _modInfo.color;
 
     final allRecords = provider.records;
     final filtered = allRecords.where((r) {
@@ -78,15 +79,20 @@ class _SheetScreenState extends State<SheetScreen> {
     filtered.sort((a, b) => b.date.compareTo(a.date));
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundGrey,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('${_capitalize(_currentSheetKey)} — ${_modInfo.label}'),
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_capitalize(_currentSheetKey), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Poppins')),
+            Text(_modInfo.label, style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins')),
+          ],
+        ),
         actions: [
-          if (isEditable)
-            IconButton(
-              icon: const Icon(Icons.add_rounded),
-              onPressed: () => _showAddRecord(context),
-            ),
           if (_pendingSyncCount > 0)
             Stack(
               children: [
@@ -97,16 +103,8 @@ class _SheetScreenState extends State<SheetScreen> {
                     await _loadPendingCount();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(Icons.cloud_done_rounded, color: Colors.white, size: 20),
-                            const SizedBox(width: 10),
-                            const Expanded(child: Text('All pending records synced to server', style: TextStyle(fontFamily: 'Poppins', fontSize: 13))),
-                          ],
-                        ),
-                        backgroundColor: const Color(0xFF1B8A3C),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        content: const Row(children: [Icon(Icons.cloud_done_rounded, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('All synced', style: TextStyle(fontFamily: 'Poppins', fontSize: 13)))]),
+                        backgroundColor: color, behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ));
                     }
                   },
@@ -115,23 +113,22 @@ class _SheetScreenState extends State<SheetScreen> {
                   right: 4, top: 4,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(color: AppColors.accentRed, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
                     child: Text('$_pendingSyncCount', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            onPressed: () => _showSearch(context),
-          ),
+          IconButton(icon: const Icon(Icons.search_rounded), onPressed: () => _showSearch(context)),
+          if (isEditable)
+            IconButton(icon: const Icon(Icons.add_rounded), onPressed: () => _showAddRecord(context)),
         ],
       ),
       drawer: const PoultryDrawer(),
       floatingActionButton: isEditable
           ? FloatingActionButton(
               onPressed: () => _showAddRecord(context),
-              backgroundColor: AppColors.primaryGreen,
+              backgroundColor: color,
               foregroundColor: Colors.white,
               child: const Icon(Icons.add),
             )
@@ -152,14 +149,13 @@ class _SheetScreenState extends State<SheetScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         margin: const EdgeInsets.symmetric(horizontal: 3),
                         decoration: BoxDecoration(
-                          color: isSelected ? _modInfo.color.withValues(alpha: 0.15) : Colors.transparent,
+                          color: isSelected ? color.withValues(alpha: 0.12) : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(10),
-                          border: isSelected ? Border.all(color: _modInfo.color, width: 1.5) : null,
                         ),
                         child: Text(
                           _capitalize(e.value),
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _modInfo.color, fontFamily: 'Poppins'),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isSelected ? color : const Color(0xFF64748B), fontFamily: 'Poppins'),
                         ),
                       ),
                     ),
@@ -172,21 +168,22 @@ class _SheetScreenState extends State<SheetScreen> {
               sheets: _sheetKeys.map((k) => tabs.SheetTabData(label: _capitalize(k))).toList(),
               selectedIndex: _sheetIndex,
               onChanged: (i) => setState(() => _sheetIndex = i),
+              activeColor: color,
             ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _FilterChip('All', _statusFilter == 'all', () => setState(() => _statusFilter = 'all')),
-                const SizedBox(width: 8),
-                _FilterChip('Pending', _statusFilter == 'pending', () => setState(() => _statusFilter = 'pending')),
-                const SizedBox(width: 8),
-                _FilterChip('Approved', _statusFilter == 'approved', () => setState(() => _statusFilter = 'approved')),
-                const SizedBox(width: 8),
-                _FilterChip('Rejected', _statusFilter == 'rejected', () => setState(() => _statusFilter = 'rejected')),
+                _filterChip('All', _statusFilter == 'all', color, () => setState(() => _statusFilter = 'all')),
+                const SizedBox(width: 6),
+                _filterChip('Pending', _statusFilter == 'pending', color, () => setState(() => _statusFilter = 'pending')),
+                const SizedBox(width: 6),
+                _filterChip('Approved', _statusFilter == 'approved', color, () => setState(() => _statusFilter = 'approved')),
+                const SizedBox(width: 6),
+                _filterChip('Rejected', _statusFilter == 'rejected', color, () => setState(() => _statusFilter = 'rejected')),
                 const Spacer(),
-                Text('${filtered.length} records', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                Text('${filtered.length}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color, fontFamily: 'Poppins')),
               ],
             ),
           ),
@@ -197,15 +194,16 @@ class _SheetScreenState extends State<SheetScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(ModuleConfig.moduleIcon(widget.module), size: 48, color: AppColors.textMuted),
+                        Icon(Icons.inbox_rounded, size: 56, color: color.withValues(alpha: 0.3)),
                         const SizedBox(height: 12),
-                        const Text('No records yet', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+                        Text('No ${_capitalize(_currentSheetKey)} records', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15, fontFamily: 'Poppins')),
                         if (isEditable) ...[
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: () => _showAddRecord(context),
                             icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Add First Record'),
+                            label: Text('Add ${_capitalize(_currentSheetKey)}'),
+                            style: ElevatedButton.styleFrom(backgroundColor: color, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                           ),
                         ],
                       ],
@@ -220,10 +218,25 @@ class _SheetScreenState extends State<SheetScreen> {
                       onApprove: (row) => _approveRecord(row),
                       onReject: (row) => _rejectRecord(context, row),
                       onTapRow: (row) => _showRowDetail(context, row),
+                      moduleColor: color,
                     ),
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _filterChip(String label, bool selected, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? color : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: selected ? Colors.white : const Color(0xFF64748B), fontFamily: 'Poppins')),
       ),
     );
   }
@@ -244,15 +257,25 @@ class _SheetScreenState extends State<SheetScreen> {
   }
 
   void _showSearch(BuildContext context) {
+    final controller = TextEditingController(text: _searchQuery);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Search Records'),
+        title: const Text('Search Records', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
         content: TextField(
+          controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Search any field...', prefixIcon: Icon(Icons.search)),
-          onChanged: (v) { setState(() => _searchQuery = v); Navigator.pop(context); },
+          decoration: InputDecoration(
+            hintText: 'Search any field...',
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          onChanged: (v) {},
         ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () { setState(() => _searchQuery = controller.text); Navigator.pop(context); }, child: const Text('Search', style: TextStyle(fontWeight: FontWeight.w700))),
+        ],
       ),
     );
   }
@@ -263,87 +286,48 @@ class _SheetScreenState extends State<SheetScreen> {
     await provider.updateRecordStatus(row['id'], 'approved', approvedBy: auth.userId);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            const Expanded(child: Text('Record approved successfully', style: TextStyle(fontFamily: 'Poppins', fontSize: 13))),
-          ],
-        ),
-        backgroundColor: AppColors.primaryGreen,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: const Row(children: [Icon(Icons.check_circle_rounded, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('Approved', style: TextStyle(fontFamily: 'Poppins', fontSize: 13)))]),
+        backgroundColor: const Color(0xFF1B8A3C), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ));
     }
   }
 
   void _rejectRecord(BuildContext context, Map<String, dynamic> row) async {
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (_) => _RejectDialog(),
-    );
+    final reason = await showDialog<String>(context: context, builder: (_) => _RejectDialog());
     if (reason == null) return;
     final provider = context.read<DailyRecordProvider>();
     await provider.updateRecordStatus(row['id'], 'rejected', rejectionReason: reason);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.cancel_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            Expanded(child: Text('Rejected: $reason', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13))),
-          ],
-        ),
-        backgroundColor: AppColors.accentRed,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Row(children: [const Icon(Icons.cancel_rounded, color: Colors.white, size: 20), const SizedBox(width: 10), Expanded(child: Text('Rejected: $reason', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13)))]),
+        backgroundColor: const Color(0xFFEF4444), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ));
     }
   }
 
   void _showRowDetail(BuildContext context, Map<String, dynamic> row) {
-    final canDelete = context.canDelete;
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _RecordDetailSheet(
-        row: row,
-        canDelete: canDelete,
-        onDelete: canDelete ? () => _deleteRecord(row) : null,
-      ),
+      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+      builder: (_) => _RecordDetailSheet(row: row, canDelete: context.canDelete, onDelete: context.canDelete ? () => _deleteRecord(row) : null),
     );
   }
 
   void _deleteRecord(Map<String, dynamic> row) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete Record'),
-        content: const Text('Are you sure? This cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: AppColors.accentRed))),
-        ],
-      ),
-    );
+    final confirmed = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
+      title: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
+      content: const Text('Are you sure? This cannot be undone.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700))),
+      ],
+    ));
     if (confirmed != true) return;
     final provider = context.read<DailyRecordProvider>();
-    final modInfo = ModuleConfig.getModule(row['module'] ?? '');
-    final sheetLabel = _capitalize((row['sheetType'] ?? 'record').toString());
     await provider.deleteRecord(row['id']);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            Expanded(child: Text('$sheetLabel record deleted', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13))),
-          ],
-        ),
-        backgroundColor: AppColors.accentRed,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: const Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20), const SizedBox(width: 10), Expanded(child: Text('Deleted', style: TextStyle(fontFamily: 'Poppins', fontSize: 13)))]),
+        backgroundColor: const Color(0xFFEF4444), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ));
     }
   }
@@ -351,63 +335,25 @@ class _SheetScreenState extends State<SheetScreen> {
   String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 }
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _FilterChip(this.label, this.selected, this.onTap);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primaryGreen.withValues(alpha: 0.15) : AppColors.mintGreen,
-          borderRadius: BorderRadius.circular(12),
-          border: selected ? Border.all(color: AppColors.primaryGreen, width: 1) : null,
-        ),
-        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: selected ? AppColors.primaryGreen : AppColors.textMedium, fontFamily: 'Poppins')),
-      ),
-    );
-  }
-}
-
 class _RejectDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = TextEditingController();
-    final presetReasons = [
-      'Numbers don\'t match',
-      'Missing photo',
-      'Cost calculation error',
-      'Duplicate entry',
-      'Wrong unit selected',
-    ];
+    final reasons = ['Numbers don\'t match', 'Missing information', 'Cost error', 'Duplicate', 'Wrong unit'];
     return AlertDialog(
-      title: const Text('Reject Record'),
+      title: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Select a reason:', style: TextStyle(fontSize: 13)),
-          const SizedBox(height: 8),
-          ...presetReasons.map((r) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context, r),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: AppColors.backgroundGrey, borderRadius: BorderRadius.circular(8)),
-                    child: Text(r, style: const TextStyle(fontSize: 13, fontFamily: 'Poppins')),
-                  ),
-                ),
-              )),
-          const SizedBox(height: 12),
+          ...reasons.map((r) => ListTile(
+            title: Text(r, style: const TextStyle(fontSize: 13, fontFamily: 'Poppins')),
+            onTap: () => Navigator.pop(context, r),
+            dense: true,
+          )),
+          const Divider(),
           TextField(
             controller: controller,
-            decoration: const InputDecoration(hintText: 'Or type custom reason...', contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+            decoration: InputDecoration(hintText: 'Custom reason...', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), isDense: true),
             onSubmitted: (v) { if (v.isNotEmpty) Navigator.pop(context, v); },
           ),
         ],
@@ -424,76 +370,41 @@ class _RecordDetailSheet extends StatelessWidget {
 
   const _RecordDetailSheet({required this.row, this.canDelete = false, this.onDelete});
 
-  static const _systemKeys = {
-    'id', 'module', 'subType', 'sheetType', 'unitId',
-    'recordedBy', 'recordedByName', 'approvedBy',
-    'status', 'rejectionReason', 'createdAt', 'updatedAt', 'data',
-  };
+  static const _systemKeys = {'id', 'module', 'subType', 'sheetType', 'unitId', 'recordedBy', 'recordedByName', 'approvedBy', 'status', 'rejectionReason', 'createdAt', 'updatedAt', 'data'};
 
   @override
   Widget build(BuildContext context) {
-    final displayFields = row.entries
-        .where((e) => !_systemKeys.contains(e.key))
-        .toList();
-
+    final displayFields = row.entries.where((e) => !_systemKeys.contains(e.key)).toList();
     return DraggableScrollableSheet(
-      initialChildSize: 0.5,
-      minChildSize: 0.3,
-      maxChildSize: 0.8,
+      initialChildSize: 0.5, minChildSize: 0.3, maxChildSize: 0.8,
       builder: (ctx, scroll) => Container(
         decoration: const BoxDecoration(
           color: Color(0xFFF8FAFB),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: ListView(
           controller: scroll,
           padding: const EdgeInsets.all(20),
           children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: AppColors.textMuted.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
+            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [Color(0xFF1B8A3C).withValues(alpha: 0.08), Color(0xFF0EA5E9).withValues(alpha: 0.05)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  StatusBadge(status: row['status'] ?? 'pending'),
-                  const Spacer(),
-                  Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.textMuted),
-                  const SizedBox(width: 4),
-                  Text(row['date'] ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textMuted, fontFamily: 'Poppins')),
-                ],
-              ),
-            ),
+            Row(children: [
+              StatusBadge(status: row['status'] ?? 'pending'),
+              const Spacer(),
+              Icon(Icons.calendar_today_rounded, size: 13, color: const Color(0xFF94A3B8)),
+              const SizedBox(width: 4),
+              Text(row['date'] ?? '', style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8), fontFamily: 'Poppins')),
+            ]),
             const SizedBox(height: 16),
             ...displayFields.map((e) => Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
-              ),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))]),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 100,
-                    child: Text(_humanizeKey(e.key), style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontFamily: 'Poppins')),
-                  ),
-                  Expanded(
-                    child: Text(
-                      e.value?.toString() ?? '',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark, fontFamily: 'Poppins'),
-                    ),
-                  ),
+                  SizedBox(width: 100, child: Text(_humanizeKey(e.key), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontFamily: 'Poppins'))),
+                  Expanded(child: Text(e.value?.toString() ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A), fontFamily: 'Poppins'))),
                 ],
               ),
             )),
@@ -501,18 +412,12 @@ class _RecordDetailSheet extends StatelessWidget {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [AppColors.accentRed.withValues(alpha: 0.08), AppColors.accentRed.withValues(alpha: 0.03)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accentRed.withValues(alpha: 0.2)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_rounded, color: AppColors.accentRed, size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(row['rejectionReason'], style: const TextStyle(fontSize: 12, color: AppColors.accentRed, fontFamily: 'Poppins'))),
-                  ],
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFEF4444).withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.2))),
+                child: Row(children: [
+                  const Icon(Icons.info_rounded, color: Color(0xFFEF4444), size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(row['rejectionReason'], style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444), fontFamily: 'Poppins'))),
+                ]),
               ),
             ],
             if (canDelete) ...[
@@ -524,11 +429,8 @@ class _RecordDetailSheet extends StatelessWidget {
                   icon: const Icon(Icons.delete_forever_rounded, size: 18),
                   label: const Text('Delete Record'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentRed,
-                    foregroundColor: Colors.white,
-                    elevation: 3,
-                    shadowColor: AppColors.accentRed.withValues(alpha: 0.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white, elevation: 3,
+                    shadowColor: const Color(0xFFEF4444).withValues(alpha: 0.4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),
@@ -539,8 +441,5 @@ class _RecordDetailSheet extends StatelessWidget {
     );
   }
 
-  String _humanizeKey(String key) {
-    if (key.isEmpty) return key;
-    return '${key[0].toUpperCase()}${key.substring(1)}';
-  }
+  String _humanizeKey(String key) => key.isEmpty ? key : '${key[0].toUpperCase()}${key.substring(1)}';
 }

@@ -13,8 +13,13 @@ class ProfileScreen extends StatelessWidget {
     final user = auth.userModel;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundGrey,
-      appBar: AppBar(title: const Text('My Profile')),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1B8A3C),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Poppins')),
+      ),
       drawer: const PoultryDrawer(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -24,36 +29,57 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF0D5C26), Color(0xFF1B8A3C)]),
+                image: const DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=600&q=80'),
+                  fit: BoxFit.cover,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    child: Text(
-                      (auth.displayName.isNotEmpty ? auth.displayName[0] : 'U').toUpperCase(),
-                      style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
                   ),
-                  const SizedBox(height: 12),
-                  Text(auth.displayName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins')),
-                  const SizedBox(height: 4),
-                  Text(auth.userEmail, style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins')),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 80, height: 80,
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                      child: ClipOval(
+                        child: Image.asset(
+                          "assets/images/3D Logo 'sam k' with Nature tru one .png",
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Center(
+                            child: Text(
+                              (auth.displayName.isNotEmpty ? auth.displayName[0] : 'U').toUpperCase(),
+                              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      auth.userRole.replaceAll('_', ' ').toUpperCase(),
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 1),
+                    const SizedBox(height: 12),
+                    Text(auth.displayName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 2))])),
+                    const SizedBox(height: 4),
+                    Text(auth.userEmail, style: const TextStyle(fontSize: 14, color: Colors.white, fontFamily: 'Poppins', shadows: [Shadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 1))])),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        auth.userRole.replaceAll('_', ' ').toUpperCase(),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 1),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),

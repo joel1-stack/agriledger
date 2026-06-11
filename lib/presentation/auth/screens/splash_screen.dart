@@ -200,10 +200,14 @@ class _SplashScreenState extends State<SplashScreen>
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
-                                  Icons.eco_rounded,
-                                  size: 68,
-                                  color: Colors.white,
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    "assets/images/3D Logo 'sam k' with Nature tru one .png",
+                                    fit: BoxFit.cover,
+                                    width: 130,
+                                    height: 130,
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.eco_rounded, size: 68, color: Colors.white),
+                                  ),
                                 ),
                               ),
                             ),

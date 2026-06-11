@@ -11,12 +11,14 @@ class SheetTabs extends StatelessWidget {
   final List<SheetTabData> sheets;
   final int selectedIndex;
   final ValueChanged<int> onChanged;
+  final Color activeColor;
 
   const SheetTabs({
     super.key,
     required this.sheets,
     required this.selectedIndex,
     required this.onChanged,
+    this.activeColor = const Color(0xFF1B8A3C),
   });
 
   @override
@@ -25,8 +27,8 @@ class SheetTabs extends StatelessWidget {
       height: 44,
       margin: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.mintGreen,
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -38,21 +40,17 @@ class SheetTabs extends StatelessWidget {
           return GestureDetector(
             onTap: () => onChanged(i),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               margin: const EdgeInsets.only(right: 4),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                color: isSelected ? activeColor : Colors.transparent,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  Icon(sheet.icon, size: 16, color: isSelected ? Colors.white : AppColors.textMedium),
-                  const SizedBox(width: 4),
-                  Text(
-                    sheet.label,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSelected ? Colors.white : AppColors.textMedium, fontFamily: 'Poppins'),
-                  ),
-                ],
+              child: Center(
+                child: Text(
+                  sheet.label,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isSelected ? Colors.white : const Color(0xFF64748B), fontFamily: 'Poppins'),
+                ),
               ),
             ),
           );

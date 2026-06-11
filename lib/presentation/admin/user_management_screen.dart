@@ -25,14 +25,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundGrey,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('User Management'),
+        backgroundColor: const Color(0xFF8B5CF6),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('User Management', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Poppins')),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_rounded),
-            onPressed: () => _showAddUserDialog(context),
-          ),
+          IconButton(icon: const Icon(Icons.person_add_rounded), onPressed: () => _showAddUserDialog(context)),
         ],
       ),
       body: Column(
@@ -43,13 +43,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'Search users...',
-                prefixIcon: const Icon(Icons.search_rounded),
+                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
                 filled: true,
                 fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                suffixIcon: _search.isNotEmpty
-                    ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchCtrl.clear(); setState(() => _search = ''); })
-                    : null,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2)),
+                suffixIcon: _search.isNotEmpty ? IconButton(icon: const Icon(Icons.clear, color: Color(0xFF94A3B8)), onPressed: () { _searchCtrl.clear(); setState(() => _search = ''); }) : null,
               ),
               onChanged: (v) => setState(() => _search = v.toLowerCase()),
             ),
@@ -58,33 +58,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             child: StreamBuilder<List<UserModel>>(
               stream: _usersStream(),
               builder: (_, snap) {
-                if (snap.hasError) {
-                  return Center(child: Text('Error loading users: ${snap.error}', style: const TextStyle(color: AppColors.accentRed)));
-                }
+                if (snap.hasError) return Center(child: Text('Error: ${snap.error}', style: const TextStyle(color: Color(0xFFEF4444), fontFamily: 'Poppins')));
                 final users = snap.data ?? [];
-                final filtered = users.where((u) {
-                  if (_search.isEmpty) return true;
-                  return u.name.toLowerCase().contains(_search) || u.email.toLowerCase().contains(_search);
-                }).toList();
+                final filtered = users.where((u) => _search.isEmpty || u.name.toLowerCase().contains(_search) || u.email.toLowerCase().contains(_search)).toList();
                 if (filtered.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.people_outline_rounded, size: 64, color: AppColors.textMuted),
-                        SizedBox(height: 8),
-                        Text('No users found', style: TextStyle(fontSize: 15, color: AppColors.textMuted)),
-                      ],
-                    ),
-                  );
+                  return const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Icon(Icons.people_outline_rounded, size: 64, color: Color(0xFF94A3B8)),
+                    SizedBox(height: 8), Text('No users found', style: TextStyle(fontSize: 15, color: Color(0xFF94A3B8), fontFamily: 'Poppins')),
+                  ]));
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: filtered.length,
-                  itemBuilder: (_, i) => _UserCard(
-                    user: filtered[i],
-                    onTap: () => _showEditUserDialog(context, filtered[i]),
-                  ),
+                  itemBuilder: (_, i) => _UserCard(user: filtered[i], onTap: () => _showEditUserDialog(context, filtered[i])),
                 );
               },
             ),
@@ -210,30 +196,28 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final roleColors = {
-      'superAdmin': AppColors.accentPurple,
+      'superAdmin': const Color(0xFF8B5CF6),
       'viewAdmin': const Color(0xFF0EA5E9),
-      'general': AppColors.primaryGreen,
+      'general': const Color(0xFF10B981),
     };
-    final color = roleColors[user.role] ?? AppColors.primaryGreen;
+    final color = roleColors[user.role] ?? const Color(0xFF10B981);
     final roleLabel = user.role == 'superAdmin' ? 'Super Admin' : (user.role == 'viewAdmin' ? 'Admin' : 'General User');
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))]),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: CircleAvatar(
           backgroundColor: color.withValues(alpha: 0.1),
-          child: Text(user.name[0].toUpperCase(), style: TextStyle(fontWeight: FontWeight.w700, color: color)),
+          child: Text(user.name[0].toUpperCase(), style: TextStyle(fontWeight: FontWeight.w700, color: color, fontFamily: 'Poppins')),
         ),
-        title: Text(user.name, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Text(user.email, style: const TextStyle(fontFamily: 'Poppins', fontSize: 12)),
+        title: Text(user.name, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
+        subtitle: Text(user.email, style: const TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Color(0xFF64748B))),
         trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-          child: Text(
-            roleLabel,
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color, fontFamily: 'Poppins'),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+          child: Text(roleLabel, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color, fontFamily: 'Poppins')),
         ),
         onTap: onTap,
       ),

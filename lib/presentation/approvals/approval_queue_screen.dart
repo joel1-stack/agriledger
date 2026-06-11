@@ -192,72 +192,123 @@ class _ApprovalCard extends StatelessWidget {
     final sheetLabel = sheetKeys.contains(sheetType) ? _capitalize(sheetType) : sheetType;
     final flat = record.toFlatMap();
 
+    const moduleImages = {
+      'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&q=80',
+      'dairy': 'https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?w=200&q=80',
+      'crops': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=200&q=80',
+      'livestock': 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=200&q=80',
+      'property': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=200&q=80',
+      'transport': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=200&q=80',
+      'cashbook': 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=200&q=80',
+      'inventory': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80',
+      'journal': 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=200&q=80',
+      'contracts': 'https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=200&q=80',
+    };
+    final imgUrl = moduleImages[module] ?? '';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: modColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Container(
+            height: 80,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              image: imgUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover) : null,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-                      Icon(ModuleConfig.moduleIcon(module), size: 12, color: modColor),
-                      const SizedBox(width: 4),
-                      Text(modLabel, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: modColor)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(ModuleConfig.moduleIcon(module), size: 12, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(modLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(sheetLabel, style: const TextStyle(fontSize: 11, color: Colors.white70, fontFamily: 'Poppins')),
+                      const Spacer(),
+                      Text(_formatDate(record.date), style: const TextStyle(fontSize: 11, color: Colors.white70, fontFamily: 'Poppins')),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.pin_drop_rounded, size: 13, color: modColor),
+                    const SizedBox(width: 4),
+                    Text('Unit: ${record.unitId}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: const Color(0xFF0F172A))),
+                    const Spacer(),
+                    Text(record.createdAt.toString().substring(0, 16), style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8), fontFamily: 'Poppins')),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Text(sheetLabel, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
-                const Spacer(),
-                Text(_formatDate(record.date), style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text('Unit: ${record.unitId}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins', color: AppColors.textDark)),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.person_rounded, size: 12, color: AppColors.textMuted),
-                const SizedBox(width: 4),
-                Text('By: ${record.recordedByName ?? record.recordedBy ?? 'Worker'}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
-                const Spacer(),
-                Text(record.createdAt.toString().substring(0, 16), style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'Poppins')),
-              ],
-            ),
-            if (flat['Notes'] != null || flat['notes'] != null) ...[
-              const SizedBox(height: 6),
-              Text('Notes: ${flat['Notes'] ?? flat['notes']}', style: const TextStyle(fontSize: 11, color: AppColors.textMedium, fontFamily: 'Poppins')),
-            ],
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: isLoading
-                      ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
-                      : ElevatedButton.icon(
-                          onPressed: onApprove,
-                          icon: const Icon(Icons.check_circle_rounded, size: 18),
-                          label: const Text('Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryGreen,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 2,
-                            shadowColor: AppColors.primaryGreen.withValues(alpha: 0.4),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.person_rounded, size: 12, color: const Color(0xFF94A3B8)),
+                    const SizedBox(width: 4),
+                    Text('By: ${record.recordedByName ?? record.recordedBy ?? 'Worker'}', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontFamily: 'Poppins')),
+                  ],
+                ),
+                if (flat['Notes'] != null || flat['notes'] != null) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.notes_rounded, size: 12, color: const Color(0xFF94A3B8)),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text('${flat['Notes'] ?? flat['notes']}', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontFamily: 'Poppins'))),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: isLoading
+                          ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+                          : ElevatedButton.icon(
+                              onPressed: onApprove,
+                              icon: const Icon(Icons.check_circle_rounded, size: 18),
+                              label: const Text('Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1B8A3C),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 2,
+                                shadowColor: const Color(0xFF1B8A3C).withValues(alpha: 0.4),
+                            ),
                           ),
-                        ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -279,8 +330,10 @@ class _ApprovalCard extends StatelessWidget {
                 ),
               ],
             ),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

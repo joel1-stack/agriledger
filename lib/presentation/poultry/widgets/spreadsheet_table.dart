@@ -10,6 +10,7 @@ class SpreadsheetTable extends StatelessWidget {
   final void Function(Map<String, dynamic> row)? onReject;
   final bool showApproval;
   final bool showStatus;
+  final Color moduleColor;
 
   const SpreadsheetTable({
     super.key,
@@ -20,6 +21,7 @@ class SpreadsheetTable extends StatelessWidget {
     this.onReject,
     this.showApproval = false,
     this.showStatus = true,
+    this.moduleColor = const Color(0xFF1B8A3C),
   });
 
   @override
@@ -36,13 +38,13 @@ class SpreadsheetTable extends StatelessWidget {
         headingRowHeight: 44,
         dataRowMinHeight: 44,
         dataRowMaxHeight: 52,
-        headingRowColor: WidgetStateProperty.all(const Color(0xFFFFF3E0).withValues(alpha: 0.5)),
+        headingRowColor: WidgetStateProperty.all(moduleColor.withValues(alpha: 0.08)),
         columns: [
           ...colLabels.map((c) => DataColumn(
-                label: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontFamily: 'Poppins')),
+                label: Text(c, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: moduleColor, fontFamily: 'Poppins')),
               )),
           if (showStatus)
-            const DataColumn(label: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontFamily: 'Poppins'))),
+            DataColumn(label: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: moduleColor, fontFamily: 'Poppins'))),
           if (showApproval) const DataColumn(label: Text('Action', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
         ],
         rows: rows.asMap().entries.map((entry) {
