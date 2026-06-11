@@ -96,9 +96,18 @@ class _SheetScreenState extends State<SheetScreen> {
                     await SyncService().syncPendingRecords();
                     await _loadPendingCount();
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Pending records synced')),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.cloud_done_rounded, color: Colors.white, size: 20),
+                            const SizedBox(width: 10),
+                            const Expanded(child: Text('All pending records synced to server', style: TextStyle(fontFamily: 'Poppins', fontSize: 13))),
+                          ],
+                        ),
+                        backgroundColor: const Color(0xFF1B8A3C),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ));
                     }
                   },
                 ),
@@ -253,9 +262,18 @@ class _SheetScreenState extends State<SheetScreen> {
     final auth = context.read<AuthProvider>();
     await provider.updateRecordStatus(row['id'], 'approved', approvedBy: auth.userId);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Record approved'), backgroundColor: AppColors.primaryGreen),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('Record approved successfully', style: TextStyle(fontFamily: 'Poppins', fontSize: 13))),
+          ],
+        ),
+        backgroundColor: AppColors.primaryGreen,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ));
     }
   }
 
@@ -268,9 +286,18 @@ class _SheetScreenState extends State<SheetScreen> {
     final provider = context.read<DailyRecordProvider>();
     await provider.updateRecordStatus(row['id'], 'rejected', rejectionReason: reason);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Rejected: $reason'), backgroundColor: AppColors.accentRed),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.cancel_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text('Rejected: $reason', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13))),
+          ],
+        ),
+        backgroundColor: AppColors.accentRed,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ));
     }
   }
 
@@ -302,11 +329,22 @@ class _SheetScreenState extends State<SheetScreen> {
     );
     if (confirmed != true) return;
     final provider = context.read<DailyRecordProvider>();
+    final modInfo = ModuleConfig.getModule(row['module'] ?? '');
+    final sheetLabel = _capitalize((row['sheetType'] ?? 'record').toString());
     await provider.deleteRecord(row['id']);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Record deleted'), backgroundColor: AppColors.accentRed),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text('$sheetLabel record deleted', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13))),
+          ],
+        ),
+        backgroundColor: AppColors.accentRed,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ));
     }
   }
 
@@ -404,7 +442,7 @@ class _RecordDetailSheet extends StatelessWidget {
       maxChildSize: 0.8,
       builder: (ctx, scroll) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFFF8FAFB),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: ListView(
@@ -418,16 +456,31 @@ class _RecordDetailSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                StatusBadge(status: row['status'] ?? 'pending'),
-                const Spacer(),
-                Text(row['date'] ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textMuted, fontFamily: 'Poppins')),
-              ],
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [Color(0xFF1B8A3C).withValues(alpha: 0.08), Color(0xFF0EA5E9).withValues(alpha: 0.05)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  StatusBadge(status: row['status'] ?? 'pending'),
+                  const Spacer(),
+                  Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.textMuted),
+                  const SizedBox(width: 4),
+                  Text(row['date'] ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            ...displayFields.map((e) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+            ...displayFields.map((e) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -448,7 +501,11 @@ class _RecordDetailSheet extends StatelessWidget {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AppColors.accentRed.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.accentRed.withValues(alpha: 0.2))),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [AppColors.accentRed.withValues(alpha: 0.08), AppColors.accentRed.withValues(alpha: 0.03)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.accentRed.withValues(alpha: 0.2)),
+                ),
                 child: Row(
                   children: [
                     const Icon(Icons.info_rounded, color: AppColors.accentRed, size: 18),
@@ -469,7 +526,9 @@ class _RecordDetailSheet extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentRed,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 3,
+                    shadowColor: AppColors.accentRed.withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),

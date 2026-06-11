@@ -86,26 +86,32 @@ class _LoginScreenState extends State<LoginScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // ── Full screen background: gradient + image ──
+          // ── Full screen background: online image + overlay ──
           Positioned.fill(
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Gradient base
+                Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
                 Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFF0A3D1F),
-                        Color(0xFF1B6B35),
-                        Color(0xFF27AE60),
+                        Color(0xCC0A3D1F),
+                        Color(0xCC1B6B35),
+                        Color(0xCC27AE60),
                       ],
                     ),
                   ),
                 ),
-                Container(color: const Color(0xFF0D5C26)),
               ],
             ),
           ),

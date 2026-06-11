@@ -36,13 +36,13 @@ class SpreadsheetTable extends StatelessWidget {
         headingRowHeight: 44,
         dataRowMinHeight: 44,
         dataRowMaxHeight: 52,
-        headingRowColor: WidgetStateProperty.all(AppColors.primaryGreen.withValues(alpha: 0.08)),
+        headingRowColor: WidgetStateProperty.all(const Color(0xFFFFF3E0).withValues(alpha: 0.5)),
         columns: [
           ...colLabels.map((c) => DataColumn(
-                label: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins')),
+                label: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontFamily: 'Poppins')),
               )),
           if (showStatus)
-            const DataColumn(label: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Poppins'))),
+            const DataColumn(label: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontFamily: 'Poppins'))),
           if (showApproval) const DataColumn(label: Text('Action', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
         ],
         rows: rows.asMap().entries.map((entry) {

@@ -207,6 +207,30 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildModuleCards(BuildContext context) {
+    const moduleImages = {
+      'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80',
+      'dairy': 'https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?w=400&q=80',
+      'crops': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80',
+      'livestock': 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&q=80',
+      'property': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80',
+      'transport': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=400&q=80',
+      'cashbook': 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80',
+      'inventory': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&q=80',
+      'journal': 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&q=80',
+      'contracts': 'https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=400&q=80',
+    };
+    const overlayColors = {
+      'poultry': Color(0xCC1B8A3C),
+      'dairy': Color(0xCC0EA5E9),
+      'crops': Color(0xCCF59E0B),
+      'livestock': Color(0xCCEF4444),
+      'property': Color(0xCC8B5CF6),
+      'transport': Color(0xCC14B8A6),
+      'cashbook': Color(0xCC1B8A3C),
+      'inventory': Color(0xCCEC4899),
+      'journal': Color(0xCCF43F5E),
+      'contracts': Color(0xCC06B6D4),
+    };
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -220,35 +244,43 @@ class DashboardScreen extends StatelessWidget {
       itemBuilder: (_, i) {
         final id = ModuleConfig.moduleIds[i];
         final mod = ModuleConfig.getModule(id);
+        final imgUrl = moduleImages[id] ?? '';
+        final overlay = overlayColors[id] ?? const Color(0xCC1B8A3C);
         return GestureDetector(
           onTap: () => Navigator.pushNamed(context, '/sheets', arguments: {'module': id}),
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [mod.color, mod.color.withValues(alpha: 0.7)]),
               borderRadius: BorderRadius.circular(20),
+              image: imgUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover) : null,
               boxShadow: [
-                BoxShadow(color: mod.color.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 6)),
+                BoxShadow(color: overlay.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 6)),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(12)),
-                    child: Icon(mod.icon, color: Colors.white, size: 24),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(mod.label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
-                      Text('${mod.sheets.length} sheets', style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins')),
-                    ],
-                  ),
-                ],
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [overlay.withValues(alpha: 0.85), overlay]),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(12)),
+                      child: Icon(mod.icon, color: Colors.white, size: 24),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(mod.label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
+                        Text('${mod.sheets.length} sheets', style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins')),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

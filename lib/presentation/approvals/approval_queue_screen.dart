@@ -130,9 +130,18 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
     await provider.updateRecordStatus(r.id, 'approved', approvedBy: auth.userId);
     if (mounted) {
       setState(() => _loadingIds.remove(r.id));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Approved'), backgroundColor: AppColors.primaryGreen),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text('${_capitalize(r.sheetType ?? "record")} approved', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13))),
+          ],
+        ),
+        backgroundColor: AppColors.primaryGreen,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ));
     }
   }
 
@@ -147,9 +156,18 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
     await provider.updateRecordStatus(r.id, 'rejected', rejectionReason: reason);
     if (mounted) {
       setState(() => _loadingIds.remove(r.id));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rejected'), backgroundColor: AppColors.accentRed),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.cancel_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text('${_capitalize(r.sheetType ?? "record")} rejected: $reason', style: const TextStyle(fontFamily: 'Poppins', fontSize: 13))),
+          ],
+        ),
+        backgroundColor: AppColors.accentRed,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ));
     }
   }
 
@@ -202,7 +220,7 @@ class _ApprovalCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(sheetLabel, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
                 const Spacer(),
-                Text(record.date, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
+                Text(_formatDate(record.date), style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'Poppins')),
               ],
             ),
             const SizedBox(height: 8),
@@ -268,6 +286,11 @@ class _ApprovalCard extends StatelessWidget {
   }
 
   String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
+  String _formatDate(dynamic d) {
+    if (d == null) return '';
+    if (d is DateTime) return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    return d.toString();
+  }
 }
 
 class _RejectDialog extends StatelessWidget {

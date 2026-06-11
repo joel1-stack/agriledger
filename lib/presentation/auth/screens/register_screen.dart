@@ -115,18 +115,25 @@ class _RegisterScreenState extends State<RegisterScreen>
               children: [
                 Container(
                   decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage('https://images.unsplash.com/photo-1564135625714-0e0a2e1b39f9?auto=format&fit=crop&w=1080&q=80'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFF0A3D1F),
-                        Color(0xFF1B8A3C),
-                        Color(0xFF4CAF50),
+                        Color(0xCC0A3D1F),
+                        Color(0xCC1B8A3C),
+                        Color(0xCC4CAF50),
                       ],
                     ),
                   ),
                 ),
-                Container(color: const Color(0xFF0D5C26)),
               ],
             ),
           ),
