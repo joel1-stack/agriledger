@@ -75,7 +75,7 @@ class AgriLedgerApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Agri-Ledger',
+        title: 'Sam K',
         theme: AppTheme.lightTheme,
         initialRoute: '/',
         onGenerateRoute: _generateRoute,

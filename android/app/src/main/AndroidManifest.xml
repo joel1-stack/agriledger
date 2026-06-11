@@ -10,7 +10,7 @@
 
     <application
         android:name="${applicationName}"
-        android:label="Poultry Manager"
+        android:label="Sam K"
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
         android:usesCleartextTraffic="true"

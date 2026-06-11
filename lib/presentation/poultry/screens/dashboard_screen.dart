@@ -45,9 +45,9 @@ class DashboardScreen extends StatelessWidget {
               child: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xCC0D5C26), Color(0xCC1B8A3C), Color(0x9927AE60)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Color(0x55000000)],
                   ),
                 ),
                 child: SafeArea(
@@ -69,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: Color(0x40FFFFFF),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -96,7 +96,7 @@ class DashboardScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           '${records.totalPending} pending approvals across ${ModuleConfig.moduleIds.length} modules',
-                          style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), fontFamily: 'Poppins'),
+                          style: const TextStyle(fontSize: 14, color: Colors.white, fontFamily: 'Poppins'),
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -270,7 +270,7 @@ class _QuickStat extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(14)),
+        decoration: BoxDecoration(color: const Color(0x30FFFFFF), borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

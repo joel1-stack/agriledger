@@ -14,11 +14,12 @@ class AppColors {
   static const Color accentRed = Color(0xFFEF4444);
   static const Color accentPurple = Color(0xFF8B5CF6);
   static const Color accentTeal = Color(0xFF14B8A6);
+  static const Color accentPink = Color(0xFFEC4899);
+  static const Color accentLime = Color(0xFF84CC16);
 
   static const Color backgroundGrey = Color(0xFFF0FBF4);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
   static const Color cardWhite = Color(0xFFFFFFFF);
-  static const Color overlayGreen = Color(0x1A1B8A3C);
 
   static const Color textDark = Color(0xFF0D2B1A);
   static const Color textMedium = Color(0xFF2D5A3D);
@@ -28,7 +29,7 @@ class AppColors {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1B8A3C), Color(0xFF27AE60)],
+    colors: [Color(0xFF27AE60), Color(0xFF1B8A3C)],
   );
 
   static const LinearGradient splashGradient = LinearGradient(
@@ -40,7 +41,7 @@ class AppColors {
   static const LinearGradient cardGradientGreen = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF27AE60), Color(0xFF1B8A3C)],
+    colors: [Color(0xFF2ECC71), Color(0xFF1B8A3C)],
   );
 
   static const LinearGradient cardGradientOrange = LinearGradient(
@@ -59,6 +60,18 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [Color(0xFFFFD54F), Color(0xFFFFC107)],
+  );
+
+  static const LinearGradient cardGradientPink = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF472B6), Color(0xFFEC4899)],
+  );
+
+  static const LinearGradient cardGradientPurple = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFA78BFA), Color(0xFF8B5CF6)],
   );
 }
 
@@ -89,12 +102,13 @@ class AppTheme {
       iconTheme: IconThemeData(color: Colors.white),
     ),
     cardTheme: CardThemeData(
-      color: AppColors.cardWhite,
-      elevation: 0,
+      color: AppColors.surfaceWhite,
+      elevation: 4,
+      shadowColor: Color(0x1A000000),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      margin: EdgeInsets.symmetric(vertical: 6),
+      margin: EdgeInsets.symmetric(vertical: 8),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -104,8 +118,24 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        elevation: 3,
-        shadowColor: AppColors.primaryGreen.withValues(alpha: 0.4),
+        elevation: 6,
+        shadowColor: AppColors.primaryGreen,
+        textStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primaryGreen,
+        side: const BorderSide(color: AppColors.primaryGreen, width: 2),
+        minimumSize: const Size(double.infinity, 56),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         textStyle: const TextStyle(
           fontFamily: 'Poppins',
           fontSize: 16,
@@ -119,11 +149,11 @@ class AppTheme {
       fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFDDF0E5), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFFD0EDDB), width: 1.5),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFDDF0E5), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFFD0EDDB), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

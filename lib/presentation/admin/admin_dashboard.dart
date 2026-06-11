@@ -17,7 +17,7 @@ class AdminDashboard extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
-        title: const Text('Agri-Ledger'),
+        title: const Text('Sam K'),
         actions: [
           IconButton(
             icon: const Icon(Icons.people_rounded),
@@ -48,7 +48,7 @@ class AdminDashboard extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xCC0D5C26), Color(0xCC1B8A3C)]),
+                  gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Color(0x55000000)]),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -58,7 +58,7 @@ class AdminDashboard extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 24,
-                          backgroundColor: Colors.white.withValues(alpha: 0.2),
+                            backgroundColor: const Color(0x40FFFFFF),
                           child: Text(
                             (auth.displayName.isNotEmpty ? auth.displayName[0] : 'A').toUpperCase(),
                             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
@@ -170,7 +170,7 @@ class _MiniStat extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(right: 6),
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(color: const Color(0x30FFFFFF), borderRadius: BorderRadius.circular(10)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
