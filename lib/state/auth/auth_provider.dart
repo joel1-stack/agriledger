@@ -64,9 +64,20 @@ class AuthProvider extends ChangeNotifier {
         _status = AuthStatus.unauthenticated;
       }
     } catch (e) {
-      _error = 'Failed to load user data';
-      _status = AuthStatus.unauthenticated;
-      debugPrint('AuthProvider._loadUserData error: $e');
+      // Firestore failed but Firebase Auth is valid — keep logged in with fallback data
+      if (_firebaseUser != null) {
+        _userModel = UserModel(
+          id: _firebaseUser!.uid,
+          email: _firebaseUser!.email ?? '',
+          name: _firebaseUser!.displayName ?? 'User',
+          role: 'general',
+          createdAt: DateTime.now(),
+        );
+        _status = AuthStatus.authenticated;
+      } else {
+        _status = AuthStatus.unauthenticated;
+      }
+      debugPrint('AuthProvider._loadUserData error (fallback used): $e');
     }
     notifyListeners();
   }

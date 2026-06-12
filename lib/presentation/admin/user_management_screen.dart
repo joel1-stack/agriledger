@@ -5,6 +5,8 @@ import '../../core/theme/app_theme.dart';
 import '../../state/auth/auth_provider.dart';
 import '../../data/models/user_model.dart';
 
+const int _maxSuperAdmins = 2;
+
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
 
@@ -122,6 +124,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
+              if (role == 'superAdmin') {
+                final snap = await FirebaseFirestore.instance.collection('users').where('role', isEqualTo: 'superAdmin').get();
+                if (snap.docs.length >= _maxSuperAdmins) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: const Text('Maximum $_maxSuperAdmins Super Admins reached. Cannot create another.'),
+                      backgroundColor: const Color(0xFFEF4444),
+                      behavior: SnackBarBehavior.floating,
+                    ));
+                  }
+                  return;
+                }
+              }
               final auth = context.read<AuthProvider>();
               await auth.signUp(emailCtrl.text, passCtrl.text, nameCtrl.text, role: role);
               if (context.mounted) Navigator.pop(context);
@@ -167,6 +182,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
+              if (role == 'superAdmin' && user.role != 'superAdmin') {
+                final snap = await FirebaseFirestore.instance.collection('users').where('role', isEqualTo: 'superAdmin').get();
+                if (snap.docs.length >= _maxSuperAdmins) {
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                      content: const Text('Maximum $_maxSuperAdmins Super Admins reached. Cannot promote to Super Admin.'),
+                      backgroundColor: const Color(0xFFEF4444),
+                      behavior: SnackBarBehavior.floating,
+                    ));
+                  }
+                  return;
+                }
+              }
               await FirebaseFirestore.instance.collection('users').doc(user.id).update({
                 'name': nameCtrl.text,
                 'role': role,

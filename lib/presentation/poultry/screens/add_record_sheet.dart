@@ -47,6 +47,7 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
   late Map<String, String> _dropdownValues;
   late String _date;
   bool _submitting = false;
+  bool _isAutoCalcUpdating = false;
   late AnimationController _slideController;
   late Animation<Offset> _slideAnim;
 
@@ -70,6 +71,59 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
       CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
     );
     _slideController.forward();
+    _setupAutoCalc();
+  }
+
+  void _setupAutoCalc() {
+    for (final col in widget.columns) {
+      _controllers[col]?.addListener(_onFieldChanged);
+    }
+  }
+
+  void _onFieldChanged() {
+    if (_isAutoCalcUpdating) return;
+    _isAutoCalcUpdating = true;
+
+    final cols = widget.columns;
+    String? qtyField, priceField, totalField;
+    for (final col in cols) {
+      final l = col.toLowerCase();
+      if (l.contains('qty') || l == 'bags' || l == 'litres' || l == 'animals' || l == 'trays/birds') qtyField = col;
+      if (l.contains('cost') || l == 'price' || l.contains('price/l') || l.contains('price/kg') || l.contains('price/bag')) priceField = col;
+      if (l == 'total' || l == 'total value') totalField = col;
+    }
+
+    if (qtyField != null && priceField != null && totalField != null) {
+      final qCtrl = _controllers[qtyField];
+      final pCtrl = _controllers[priceField];
+      final tCtrl = _controllers[totalField];
+      if (qCtrl != null && pCtrl != null && tCtrl != null) {
+        final qty = double.tryParse(qCtrl.text) ?? 0;
+        final price = double.tryParse(pCtrl.text) ?? 0;
+        if (qty > 0 && price > 0) {
+          tCtrl.text = (qty * price).toStringAsFixed(2);
+        }
+      }
+    }
+
+    // Fuel: Litres × Price/L = Total
+    final litreField = cols.cast<String?>().firstWhere((c) => c?.toLowerCase() == 'litres', orElse: () => null);
+    final priceLField = cols.cast<String?>().firstWhere((c) => c?.toLowerCase() == 'price/l', orElse: () => null);
+    final totalField2 = cols.cast<String?>().firstWhere((c) => c?.toLowerCase() == 'total', orElse: () => null);
+    if (litreField != null && priceLField != null && totalField2 != null) {
+      final lCtrl = _controllers[litreField];
+      final pCtrl = _controllers[priceLField];
+      final tCtrl = _controllers[totalField2];
+      if (lCtrl != null && pCtrl != null && tCtrl != null) {
+        final qty = double.tryParse(lCtrl.text) ?? 0;
+        final price = double.tryParse(pCtrl.text) ?? 0;
+        if (qty > 0 && price > 0) {
+          tCtrl.text = (qty * price).toStringAsFixed(2);
+        }
+      }
+    }
+
+    _isAutoCalcUpdating = false;
   }
 
   @override
