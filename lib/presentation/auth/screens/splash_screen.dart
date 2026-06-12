@@ -83,7 +83,10 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _navigate() async {
     if (!mounted) return;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.firebaseUser != null) {
+    // Wait a bit for Firebase Auth to restore persisted session
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    if (authProvider.isAuthenticated || authProvider.firebaseUser != null) {
       Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       Navigator.pushReplacementNamed(context, '/login');
