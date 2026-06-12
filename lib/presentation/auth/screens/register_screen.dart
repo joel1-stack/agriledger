@@ -263,12 +263,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 16),
 
-                        // ── Account type ──────────────────────────────────
+                        // ── Account type selector ─────────────────────────
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Account Type',
+                              'Select Account Type',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w700,
@@ -284,6 +284,24 @@ class _RegisterScreenState extends State<RegisterScreen>
                               description: 'Record farm activities, manage inventory & view cashbook',
                               color: AppColors.primaryGreen,
                               bg: const Color(0xFFF0FBF4),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildRoleOption(
+                              role: 'viewAdmin',
+                              icon: Icons.visibility_rounded,
+                              title: 'View Admin',
+                              description: 'View reports, export data & analytics dashboard',
+                              color: const Color(0xFF1565C0),
+                              bg: const Color(0xFFF0F4FF),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildRoleOption(
+                              role: 'superAdmin',
+                              icon: Icons.shield_rounded,
+                              title: 'Super Admin',
+                              description: 'Full access: manage users, roles & all farm data',
+                              color: const Color(0xFFB71C1C),
+                              bg: const Color(0xFFFFF0F0),
                             ),
                           ],
                         ),
