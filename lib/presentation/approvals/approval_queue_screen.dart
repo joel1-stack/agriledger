@@ -400,8 +400,8 @@ class _ApprovalCard extends StatelessWidget {
   }
 
   double _extractAmount(Map<String, dynamic> flat) {
-    const candidates = ['totalCost', 'totalRevenue', 'amount', 'cost', 'netPay', 'revenue', 'income', 'value', 'total', 'price'];
-    for (final key in candidates) {
+    const moneyFields = <String>['Total', 'Amount', 'Cost', 'Price', 'Income', 'Paid', 'Debit', 'Credit', 'Total Value', 'Total Debit', 'Total Credit', 'Expenses', 'Profit', 'Balance', 'Bank Balance', 'Difference', 'Unit Cost'];
+    for (final key in moneyFields) {
       final v = flat[key];
       if (v != null) {
         final n = double.tryParse('$v');

@@ -72,15 +72,17 @@ class ReportsScreen extends StatelessWidget {
   // ── Data helpers ──────────────────────────────────────────────────────────
 
   double _extractAmount(Map<String, dynamic> flat) {
-    final candidates = ['totalCost', 'totalRevenue', 'amount', 'cost', 'netPay', 'revenue', 'income', 'value', 'total', 'price'];
-    for (final key in candidates) {
+    const moneyFields = <String>['Total', 'Amount', 'Cost', 'Price', 'Income', 'Paid', 'Debit', 'Credit', 'Total Value', 'Total Debit', 'Total Credit', 'Expenses', 'Profit', 'Balance', 'Bank Balance', 'Difference', 'Unit Cost'];
+    for (final key in moneyFields) {
       final v = flat[key];
       if (v != null) {
         final n = double.tryParse('$v');
         if (n != null && n > 0) return n;
       }
     }
+    const skipFields = <String>{'Qty (kg)', 'Qty', 'Dead', 'Culled', 'Remaining', 'Litres', 'Morning (L)', 'Evening (L)', 'Total (L)', 'Qty (bags)', 'Bags', 'Sample', 'Uniformity', 'Target', 'Variance', '% Prod', 'Progress %', 'Percent', 'Flock Count', 'In', 'Out', 'Current', 'Reorder Lvl', 'Reorder Qty', 'Avg (kg)', 'Weight', 'Animals', 'Trays/Birds', 'Price/L', 'Price/kg', 'Price/Bag', 'Cow ID', 'Partner ID'};
     for (final entry in flat.entries) {
+      if (skipFields.contains(entry.key)) continue;
       final n = double.tryParse('${entry.value}');
       if (n != null && n > 0) return n;
     }
@@ -88,7 +90,7 @@ class ReportsScreen extends StatelessWidget {
   }
 
   bool _isExpenseSheet(String sheet) {
-    return ['feed', 'vet', 'labour', 'housing', 'overheads', 'expense', 'cost', 'feed_consumption', 'maintenance', 'fuel', 'supplies'].contains(sheet);
+    return ['feed', 'vet', 'labour', 'housing', 'overheads', 'expense', 'cost', 'feed_consumption', 'maintenance', 'fuel', 'supplies', 'health', 'fertilizer', 'pest_control', 'planting', 'debits'].contains(sheet);
   }
 
   Map<String, _MonthData> _computeMonthlyData(List<DailyRecord> records) {
