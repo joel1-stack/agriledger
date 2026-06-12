@@ -22,6 +22,7 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DailyRecordProvider>();
+    final auth = context.watch<AuthProvider>();
     final allRecords = provider.records;
     final filtered = allRecords.where((r) {
       if (_statusFilter != 'all' && r.status != _statusFilter) return false;
@@ -121,6 +122,7 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
                       final r = filtered[i];
                       return _ApprovalCard(
                         record: r,
+                        isSuperAdmin: auth.isSuperAdmin,
                         isLoading: _loadingIds.contains(r.id),
                         onApprove: () => _approve(r),
                         onReject: () => _reject(r),
@@ -212,11 +214,12 @@ class _ApprovalQueueScreenState extends State<ApprovalQueueScreen> {
 
 class _ApprovalCard extends StatelessWidget {
   final dynamic record;
+  final bool isSuperAdmin;
   final bool isLoading;
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
-  const _ApprovalCard({required this.record, this.isLoading = false, required this.onApprove, required this.onReject});
+  const _ApprovalCard({required this.record, this.isSuperAdmin = false, this.isLoading = false, required this.onApprove, required this.onReject});
 
   @override
   Widget build(BuildContext context) {
@@ -227,6 +230,8 @@ class _ApprovalCard extends StatelessWidget {
     final sheetKeys = ModuleConfig.getSheetKeys(module);
     final sheetLabel = sheetKeys.contains(sheetType) ? _capitalize(sheetType) : sheetType;
     final flat = record.toFlatMap();
+    final amount = _extractAmount(flat);
+    final needsSuperAdmin = amount >= 15000 && !isSuperAdmin;
 
     const moduleImages = {
       'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&q=80',
@@ -312,6 +317,24 @@ class _ApprovalCard extends StatelessWidget {
                     Text('By: ${record.recordedByName ?? record.recordedBy ?? 'Worker'}', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontFamily: 'Poppins')),
                   ],
                 ),
+                if (amount > 0) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.monetization_on_rounded, size: 12, color: needsSuperAdmin ? const Color(0xFFEF4444) : modColor),
+                      const SizedBox(width: 4),
+                      Text('Amount: KES ${_fmt(amount)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: needsSuperAdmin ? const Color(0xFFEF4444) : const Color(0xFF0F172A))),
+                      if (needsSuperAdmin) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(color: const Color(0xFFEF4444).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                          child: const Text('Super Admin only', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: Color(0xFFEF4444), fontFamily: 'Poppins')),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
                 if (flat['Notes'] != null || flat['notes'] != null) ...[
                   const SizedBox(height: 6),
                   Container(
@@ -330,21 +353,23 @@ class _ApprovalCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: isLoading
-                          ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
-                          : ElevatedButton.icon(
-                              onPressed: onApprove,
-                              icon: const Icon(Icons.check_circle_rounded, size: 18),
-                              label: const Text('Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1B8A3C),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                elevation: 2,
-                                shadowColor: const Color(0xFF1B8A3C).withValues(alpha: 0.4),
-                            ),
-                          ),
+                  child: isLoading
+                      ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+                      : ElevatedButton.icon(
+                          onPressed: needsSuperAdmin ? null : onApprove,
+                          icon: Icon(Icons.check_circle_rounded, size: 18, color: needsSuperAdmin ? const Color(0xFF94A3B8) : Colors.white),
+                          label: Text(needsSuperAdmin ? 'Locked' : 'Approve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: needsSuperAdmin ? const Color(0xFF94A3B8) : Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: needsSuperAdmin ? const Color(0xFFE2E8F0) : const Color(0xFF1B8A3C),
+                            foregroundColor: needsSuperAdmin ? const Color(0xFF94A3B8) : Colors.white,
+                            disabledBackgroundColor: const Color(0xFFE2E8F0),
+                            disabledForegroundColor: const Color(0xFF94A3B8),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: needsSuperAdmin ? 0 : 2,
+                            shadowColor: needsSuperAdmin ? Colors.transparent : const Color(0xFF1B8A3C).withValues(alpha: 0.4),
+                        ),
+                      ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -373,6 +398,20 @@ class _ApprovalCard extends StatelessWidget {
       ),
     );
   }
+
+  double _extractAmount(Map<String, dynamic> flat) {
+    const candidates = ['totalCost', 'totalRevenue', 'amount', 'cost', 'netPay', 'revenue', 'income', 'value', 'total', 'price'];
+    for (final key in candidates) {
+      final v = flat[key];
+      if (v != null) {
+        final n = double.tryParse('$v');
+        if (n != null && n > 0) return n;
+      }
+    }
+    return 0;
+  }
+
+  String _fmt(double v) => v >= 1000000 ? '${(v / 1000000).toStringAsFixed(1)}M' : v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toStringAsFixed(0);
 
   String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
   String _formatDate(dynamic d) {

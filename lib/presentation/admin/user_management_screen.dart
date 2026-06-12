@@ -24,6 +24,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    if (!auth.isSuperAdmin) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF8B5CF6),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: const Text('User Management', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Poppins')),
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_rounded, size: 64, color: Color(0xFF94A3B8)),
+              SizedBox(height: 12),
+              Text('Access Restricted', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Poppins', color: Color(0xFF0F172A))),
+              SizedBox(height: 4),
+              Text('Only Super Admin can manage users', style: TextStyle(fontSize: 13, fontFamily: 'Poppins', color: Color(0xFF64748B))),
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(

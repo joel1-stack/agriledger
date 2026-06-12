@@ -1,6 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/module_config.dart';
 import '../../state/poultry/poultry_provider.dart';
@@ -27,6 +34,18 @@ class ReportsScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         title: const Text('Reports & Analytics', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Poppins')),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
+            color: Colors.white,
+            onSelected: (v) => _handleExport(context, v, allRecords, summary, monthlyData, moduleTotals),
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'pdf', child: ListTile(leading: Icon(Icons.picture_as_pdf_rounded, color: Color(0xFFEF4444)), title: Text('Download PDF', style: TextStyle(fontFamily: 'Poppins')), dense: true, visualDensity: VisualDensity.compact, contentPadding: EdgeInsets.zero)),
+              const PopupMenuItem(value: 'print', child: ListTile(leading: Icon(Icons.print_rounded, color: Color(0xFF0EA5E9)), title: Text('Print Report', style: TextStyle(fontFamily: 'Poppins')), dense: true, visualDensity: VisualDensity.compact, contentPadding: EdgeInsets.zero)),
+              const PopupMenuItem(value: 'share', child: ListTile(leading: Icon(Icons.share_rounded, color: Color(0xFF10B981)), title: Text('Share Report', style: TextStyle(fontFamily: 'Poppins')), dense: true, visualDensity: VisualDensity.compact, contentPadding: EdgeInsets.zero)),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -441,6 +460,110 @@ class ReportsScreen extends StatelessWidget {
   }
 
   String _fmt(double v) => v >= 1000000 ? '${(v / 1000000).toStringAsFixed(1)}M' : v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toStringAsFixed(0);
+
+  void _handleExport(BuildContext context, String action, List<DailyRecord> records, _Summary summary, Map<String, _MonthData> monthly, Map<String, _ModuleTotal> moduleTotals) async {
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    try {
+      final pdfBytes = await _generatePdf(summary, monthly, moduleTotals);
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      if (action == 'pdf') {
+        final dir = await getTemporaryDirectory();
+        final file = File('${dir.path}/agri_ledger_report.pdf');
+        await file.writeAsBytes(pdfBytes);
+        Share.shareXFiles([XFile(file.path)], text: 'AgriLedger Report');
+      } else if (action == 'print') {
+        await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+      } else if (action == 'share') {
+        final dir = await getTemporaryDirectory();
+        final file = File('${dir.path}/agri_ledger_report.pdf');
+        await file.writeAsBytes(pdfBytes);
+        Share.shareXFiles([XFile(file.path)], text: 'AgriLedger Report');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e'), backgroundColor: const Color(0xFFEF4444)));
+      }
+    }
+  }
+
+  Future<Uint8List> _generatePdf(_Summary summary, Map<String, _MonthData> monthly, Map<String, _ModuleTotal> moduleTotals) async {
+    final pdf = pw.Document();
+    const green = PdfColor.fromInt(0xFF1B8A3C);
+    const dark = PdfColor.fromInt(0xFF0F172A);
+    const muted = PdfColor.fromInt(0xFF64748B);
+
+    pdf.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(40),
+      build: (ctx) => [
+        pw.Header(level: 0, child: pw.Text('AgriLedger Report', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: green))),
+        pw.Paragraph(text: 'Generated: ${DateTime.now().toLocal().toString().substring(0, 16)}', style: pw.TextStyle(color: muted, fontSize: 10)),
+        pw.SizedBox(height: 16),
+
+        pw.Header(level: 1, text: 'Financial Summary'),
+        pw.TableHelper.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+          headerDecoration: pw.BoxDecoration(color: green),
+          cellStyle: pw.TextStyle(fontSize: 10),
+          cellAlignments: {0: pw.Alignment.centerLeft, 1: pw.Alignment.centerRight},
+          headers: ['Metric', 'Value'],
+          data: [
+            ['Total Revenue', 'KES ${summary.income.toStringAsFixed(2)}'],
+            ['Total Expenses', 'KES ${summary.expenses.toStringAsFixed(2)}'],
+            ['Net Profit', 'KES ${(summary.income - summary.expenses).toStringAsFixed(2)}'],
+            ['Profit Margin', summary.income > 0 ? '${((summary.income - summary.expenses) / summary.income * 100).toStringAsFixed(1)}%' : '0.0%'],
+          ],
+        ),
+        pw.SizedBox(height: 24),
+
+        pw.Header(level: 1, text: 'Monthly Breakdown'),
+        () {
+          final entries = monthly.entries.toList();
+          entries.sort((a, b) => a.key.compareTo(b.key));
+          final rows = entries.map((e) {
+            final profit = e.value.income - e.value.expenses;
+            return <dynamic>[e.key, e.value.income.toStringAsFixed(2), e.value.expenses.toStringAsFixed(2), profit.toStringAsFixed(2)];
+          }).toList();
+          return pw.TableHelper.fromTextArray(
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+            headerDecoration: pw.BoxDecoration(color: green),
+            cellStyle: pw.TextStyle(fontSize: 9),
+            cellAlignments: {0: pw.Alignment.centerLeft, 1: pw.Alignment.centerRight, 2: pw.Alignment.centerRight, 3: pw.Alignment.centerRight},
+            headers: ['Month', 'Income', 'Expenses', 'Profit'],
+            data: rows,
+          );
+        }(),
+        pw.SizedBox(height: 24),
+
+        pw.Header(level: 1, text: 'Module Breakdown'),
+        () {
+          final entries = moduleTotals.entries.toList();
+          entries.sort((a, b) => (b.value.income + b.value.expenses).compareTo(a.value.income + a.value.expenses));
+          final rows = entries.map((e) {
+            final profit = e.value.income - e.value.expenses;
+            return <dynamic>[ModuleConfig.moduleLabel(e.key), e.value.income.toStringAsFixed(2), e.value.expenses.toStringAsFixed(2), profit.toStringAsFixed(2)];
+          }).toList();
+          return pw.TableHelper.fromTextArray(
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+            headerDecoration: pw.BoxDecoration(color: green),
+            cellStyle: pw.TextStyle(fontSize: 9),
+            cellAlignments: {0: pw.Alignment.centerLeft, 1: pw.Alignment.centerRight, 2: pw.Alignment.centerRight, 3: pw.Alignment.centerRight},
+            headers: ['Module', 'Income', 'Expenses', 'Profit'],
+            data: rows,
+          );
+        }(),
+        pw.SizedBox(height: 24),
+
+        pw.Header(level: 2, text: 'Notes'),
+        pw.Paragraph(text: 'This report was automatically generated by AgriLedger. All figures are in Kenyan Shillings (KES). Only approved records are included.', style: pw.TextStyle(color: muted, fontSize: 8)),
+      ],
+    ));
+
+    return pdf.save();
+  }
 }
 
 class _MonthData {
