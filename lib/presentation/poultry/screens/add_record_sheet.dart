@@ -85,42 +85,120 @@ class _AddRecordSheetState extends State<AddRecordSheet> with SingleTickerProvid
     _isAutoCalcUpdating = true;
 
     final cols = widget.columns;
-    String? qtyField, priceField, totalField;
-    for (final col in cols) {
-      final l = col.toLowerCase();
-      if (l.contains('qty') || l == 'bags' || l == 'litres' || l == 'animals' || l == 'trays/birds') qtyField = col;
-      if (l.contains('cost') || l == 'price' || l.contains('price/l') || l.contains('price/kg') || l.contains('price/bag')) priceField = col;
-      if (l == 'total' || l == 'total value') totalField = col;
+    final L = cols.map((c) => c.toLowerCase().trim()).toList();
+
+    double val(int i) => double.tryParse(_controllers[cols[i]]?.text ?? '') ?? 0;
+    void setVal(int i, double v) => _controllers[cols[i]]?.text = v.toStringAsFixed(2);
+
+    // ── Pattern: Qty × Price = Total ──
+    int? qi, pi, ti;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'qty (kg)' || L[i] == 'qty' || L[i] == 'bags' || L[i] == 'animals' || L[i] == 'trays/birds') qi = i;
+      if (L[i] == 'cost/kg' || L[i] == 'price/kg' || L[i] == 'price/bag' || L[i] == 'price' || L[i] == 'cost') pi = i;
+      if (L[i] == 'total') ti = i;
+    }
+    if (qi != null && pi != null && ti != null) {
+      final q = val(qi), p = val(pi);
+      if (q > 0 && p > 0) { setVal(ti, q * p); _isAutoCalcUpdating = false; return; }
     }
 
-    if (qtyField != null && priceField != null && totalField != null) {
-      final qCtrl = _controllers[qtyField];
-      final pCtrl = _controllers[priceField];
-      final tCtrl = _controllers[totalField];
-      if (qCtrl != null && pCtrl != null && tCtrl != null) {
-        final qty = double.tryParse(qCtrl.text) ?? 0;
-        final price = double.tryParse(pCtrl.text) ?? 0;
-        if (qty > 0 && price > 0) {
-          tCtrl.text = (qty * price).toStringAsFixed(2);
-        }
-      }
+    // ── Pattern: Litres × Price/L = Total (fuel) ──
+    int? li, pli, t2i;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'litres') li = i;
+      if (L[i] == 'price/l') pli = i;
+      if (L[i] == 'total') t2i = i;
+    }
+    if (li != null && pli != null && t2i != null) {
+      final l = val(li), p = val(pli);
+      if (l > 0 && p > 0) { setVal(t2i, l * p); _isAutoCalcUpdating = false; return; }
     }
 
-    // Fuel: Litres × Price/L = Total
-    final litreField = cols.cast<String?>().firstWhere((c) => c?.toLowerCase() == 'litres', orElse: () => null);
-    final priceLField = cols.cast<String?>().firstWhere((c) => c?.toLowerCase() == 'price/l', orElse: () => null);
-    final totalField2 = cols.cast<String?>().firstWhere((c) => c?.toLowerCase() == 'total', orElse: () => null);
-    if (litreField != null && priceLField != null && totalField2 != null) {
-      final lCtrl = _controllers[litreField];
-      final pCtrl = _controllers[priceLField];
-      final tCtrl = _controllers[totalField2];
-      if (lCtrl != null && pCtrl != null && tCtrl != null) {
-        final qty = double.tryParse(lCtrl.text) ?? 0;
-        final price = double.tryParse(pCtrl.text) ?? 0;
-        if (qty > 0 && price > 0) {
-          tCtrl.text = (qty * price).toStringAsFixed(2);
-        }
-      }
+    // ── Pattern: Morning (L) + Evening (L) = Total (L) [milk] ──
+    int? mi, ei, mti;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'morning (l)') mi = i;
+      if (L[i] == 'evening (l)') ei = i;
+      if (L[i] == 'total (l)') mti = i;
+    }
+    if (mi != null && ei != null && mti != null) {
+      setVal(mti, val(mi) + val(ei));
+      _isAutoCalcUpdating = false; return;
+    }
+
+    // ── Pattern: Income - Expenses = Profit [trips] ──
+    int? ii, exi, pri;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'income') ii = i;
+      if (L[i] == 'expenses') exi = i;
+      if (L[i] == 'profit') pri = i;
+    }
+    if (ii != null && exi != null && pri != null) {
+      setVal(pri, val(ii) - val(exi));
+      _isAutoCalcUpdating = false; return;
+    }
+
+    // ── Pattern: Total Debit - Total Credit = Difference [balances] ──
+    int? tdi, tci, di;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'total debit') tdi = i;
+      if (L[i] == 'total credit') tci = i;
+      if (L[i] == 'difference') di = i;
+    }
+    if (tdi != null && tci != null && di != null) {
+      setVal(di, val(tdi) - val(tci));
+      _isAutoCalcUpdating = false; return;
+    }
+
+    // ── Pattern: Bank Balance - Book Balance = Difference [bank rec] ──
+    int? bbi, bki, d2i;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'bank balance') bbi = i;
+      if (L[i] == 'book balance') bki = i;
+      if (L[i] == 'difference') d2i = i;
+    }
+    if (bbi != null && bki != null && d2i != null) {
+      setVal(d2i, val(bbi) - val(bki));
+      _isAutoCalcUpdating = false; return;
+    }
+
+    // ── Pattern: In - Out = Balance [inventory stock card] ──
+    int? ini, outi, bali;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'in') ini = i;
+      if (L[i] == 'out') outi = i;
+      if (L[i] == 'balance') bali = i;
+    }
+    if (ini != null && outi != null && bali != null) {
+      setVal(bali, val(ini) - val(outi));
+      _isAutoCalcUpdating = false; return;
+    }
+
+    // ── Pattern: Total / 30 = Trays  and  (Total / Flock) * 100 = % Prod [eggs] ──
+    int? tei, trayi, pcti, fci;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'total eggs') tei = i;
+      if (L[i] == 'trays') trayi = i;
+      if (L[i] == '% prod' || L[i] == 'percent') pcti = i;
+      if (L[i] == 'flock count') fci = i;
+    }
+    if (tei != null) {
+      final totalEggs = val(tei);
+      if (trayi != null && totalEggs > 0) setVal(trayi, totalEggs / 30);
+      if (pcti != null && fci != null && val(fci) > 0) setVal(pcti, (totalEggs / val(fci)) * 100);
+      if (trayi != null || (pcti != null && fci != null)) { _isAutoCalcUpdating = false; return; }
+    }
+
+    // ── Pattern: Unit Cost × Balance = Total Value [inventory] ──
+    int? uci, bal2i, tvi;
+    for (int i = 0; i < cols.length; i++) {
+      if (L[i] == 'unit cost') uci = i;
+      if (L[i] == 'balance') bal2i = i;
+      if (L[i] == 'total value') tvi = i;
+    }
+    if (uci != null && bal2i != null && tvi != null) {
+      setVal(tvi, val(uci) * val(bal2i));
+      _isAutoCalcUpdating = false; return;
     }
 
     _isAutoCalcUpdating = false;

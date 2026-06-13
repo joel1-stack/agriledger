@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/module_config.dart';
+import '../poultry/widgets/poultry_drawer.dart';
 import '../../data/models/daily_record_model.dart';
 import '../../state/daily_record/daily_record_provider.dart';
 import '../../state/poultry/poultry_provider.dart';
@@ -30,6 +31,7 @@ class ReportsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const PoultryDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B8A3C),
         foregroundColor: Colors.white,
@@ -421,8 +423,6 @@ class ReportsScreen extends StatelessWidget {
       ),
     );
   }
-
-  navbar() {}
 
   Widget _buildProfitTrendChart(Map<String, _MonthData> monthly) {
     if (monthly.isEmpty)
