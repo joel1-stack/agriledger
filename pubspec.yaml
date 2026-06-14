@@ -67,27 +67,3 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/fonts/
-    - assets/animations/
-
-  fonts:
-    - family: MatheloSans  # CHANGED: Matched to your font family name
-      fonts:
-        - asset: assets/fonts/mathelo-regular.otf
-          weight: 400
-        - asset: assets/fonts/mathelo-bold.otf
-          weight: 700
-        - asset: assets/fonts/mathelo-light.otf
-          weight: 300
-    - family: Stara
-      fonts:
-        - asset: assets/fonts/Stara-Medium.otf
-          weight: 500
-        - asset: assets/fonts/Stara-SemiBold.otf
-          weight: 600
-        - asset: assets/fonts/Stara-Bold.otf
-          weight: 700
-        - asset: assets/fonts/Stara-ExtraBold.otf
-          weight: 800
-        - asset: assets/fonts/Stara-Black.otf
-          weight: 900
