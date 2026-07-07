@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../data/models/poultry/batch_performance.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../state/poultry/poultry_provider.dart';
 
@@ -11,10 +12,10 @@ class BatchPerformanceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<PoultryProvider>(context);
     final performances = provider.batchPerformances;
-
-    final bestBatch = performances.isEmpty
-        ? null
-        : performances.reduce((a, b) => a.netProfit > b.netProfit ? a : b);
+    BatchPerformance? bestBatch;
+    if (performances.isNotEmpty) {
+      bestBatch = performances.reduce((a, b) => a.netProfit > b.netProfit ? a : b);
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('\u{1F4C8} Batch Performance')),

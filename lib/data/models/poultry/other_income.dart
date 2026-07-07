@@ -36,13 +36,13 @@ class OtherIncome {
 
   factory OtherIncome.fromMap(String id, Map<String, dynamic> map) => OtherIncome(
     id: id,
-    userId: map['userId'] as String,
-    date: (map['date'] as Timestamp).toDate(),
-    category: map['category'] as String,
-    description: map['description'] as String,
-    quantity: (map['quantity'] as num).toDouble(),
-    unitPrice: (map['unitPrice'] as num).toDouble(),
-    total: (map['total'] as num).toDouble(),
-    createdAt: (map['createdAt'] as Timestamp).toDate(),
+    userId: map['userId'] as String? ?? '',
+    date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    category: map['category'] as String? ?? '',
+    description: map['description'] as String? ?? '',
+    quantity: (map['quantity'] as num?)?.toDouble() ?? 0,
+    unitPrice: (map['unitPrice'] as num?)?.toDouble() ?? 0,
+    total: (map['total'] as num?)?.toDouble() ?? 0,
+    createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
   );
 }

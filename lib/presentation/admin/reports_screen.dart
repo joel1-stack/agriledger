@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -1047,18 +1046,15 @@ class ReportsScreen extends StatelessWidget {
       if (!context.mounted) return;
       Navigator.pop(context);
 
-      if (action == 'pdf') {
+      if (action == 'pdf' || action == 'print' || action == 'share') {
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/agri_ledger_report.pdf');
         await file.writeAsBytes(pdfBytes);
-        Share.shareXFiles([XFile(file.path)], text: 'AgriLedger Report');
-      } else if (action == 'print') {
-        await Printing.layoutPdf(onLayout: (_) => pdfBytes);
-      } else if (action == 'share') {
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/agri_ledger_report.pdf');
-        await file.writeAsBytes(pdfBytes);
-        Share.shareXFiles([XFile(file.path)], text: 'AgriLedger Report');
+        if (action == 'print') {
+          await Process.run('cmd', ['/c', 'start', '', file.path]);
+        } else {
+          Share.shareXFiles([XFile(file.path)], text: 'AgriLedger Report');
+        }
       }
     } catch (e) {
       if (context.mounted) {

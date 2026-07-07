@@ -11,6 +11,7 @@ class FeedExpense {
   final double qtyKg;
   final double totalCost;
   final double unitCost;
+  final String status;
   final DateTime createdAt;
 
   FeedExpense({
@@ -24,6 +25,7 @@ class FeedExpense {
     required this.qtyKg,
     required this.totalCost,
     required this.unitCost,
+    this.status = 'pending',
     required this.createdAt,
   });
 
@@ -37,20 +39,22 @@ class FeedExpense {
     'qtyKg': qtyKg,
     'totalCost': totalCost,
     'unitCost': unitCost,
+    'status': status,
     'createdAt': Timestamp.fromDate(createdAt),
   };
 
   factory FeedExpense.fromMap(String id, Map<String, dynamic> map) => FeedExpense(
     id: id,
-    userId: map['userId'] as String,
-    date: (map['date'] as Timestamp).toDate(),
-    batchId: map['batchId'] as String,
-    feedType: map['feedType'] as String,
-    birdType: map['birdType'] as String,
-    supplier: map['supplier'] as String,
-    qtyKg: (map['qtyKg'] as num).toDouble(),
-    totalCost: (map['totalCost'] as num).toDouble(),
-    unitCost: (map['unitCost'] as num).toDouble(),
-    createdAt: (map['createdAt'] as Timestamp).toDate(),
+    userId: map['userId'] as String? ?? '',
+    date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    batchId: map['batchId'] as String? ?? '',
+    feedType: map['feedType'] as String? ?? '',
+    birdType: map['birdType'] as String? ?? '',
+    supplier: map['supplier'] as String? ?? '',
+    qtyKg: (map['qtyKg'] as num?)?.toDouble() ?? (map['quantity'] as num?)?.toDouble() ?? 0,
+    totalCost: (map['totalCost'] as num?)?.toDouble() ?? 0,
+    unitCost: (map['unitCost'] as num?)?.toDouble() ?? 0,
+    status: map['status'] as String? ?? 'pending',
+    createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
   );
 }

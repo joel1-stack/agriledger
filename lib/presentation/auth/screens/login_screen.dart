@@ -31,15 +31,19 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.asset("assets/images/bacgrund top.mp4");
-    _videoController.setLooping(true);
-    _videoController.setVolume(0);
-    _videoController.initialize().then((_) {
-      if (mounted) {
-        setState(() => _videoInitialized = true);
-        _videoController.play();
-      }
-    });
+    try {
+      _videoController = VideoPlayerController.asset("assets/images/bg.mp4");
+      _videoController.setLooping(true);
+      _videoController.setVolume(0);
+      _videoController.initialize().then((_) {
+        if (mounted) {
+          setState(() => _videoInitialized = true);
+          _videoController.play();
+        }
+      }).catchError((_) {});
+    } catch (_) {
+      _videoController = VideoPlayerController.asset("assets/images/bg.mp4");
+    }
 
     _fadeController =
         AnimationController(vsync: this, duration: const Duration(milliseconds: 700));

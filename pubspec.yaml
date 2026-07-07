@@ -24,9 +24,8 @@ dependencies:
   share_plus: ^12.0.1
   file_picker: ^10.3.10  # CHANGED: Upgraded from 5.5.0 to fix Java compilation error
 
-  # PDF & Printing
+  # PDF
   pdf: ^3.11.3
-  printing: ^5.14.2
 
   # Excel Export
   excel: ^4.0.6  # Keep as is

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import '../../../state/daily_record/daily_record_provider.dart';
+import '../../../state/poultry/poultry_provider.dart';
 import '../../../state/auth/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/module_config.dart';
@@ -22,15 +22,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.asset("assets/images/bacgrund top.mp4");
-    _videoController.setLooping(true);
-    _videoController.setVolume(0);
-    _videoController.initialize().then((_) {
-      if (mounted) {
-        setState(() => _videoInitialized = true);
-        _videoController.play();
-      }
-    });
+    try {
+      _videoController = VideoPlayerController.asset("assets/images/bg.mp4");
+      _videoController.setLooping(true);
+      _videoController.setVolume(0);
+      _videoController.initialize().then((_) {
+        if (mounted) {
+          setState(() => _videoInitialized = true);
+          _videoController.play();
+        }
+      }).catchError((_) {});
+    } catch (_) {
+      _videoController = VideoPlayerController.asset("assets/images/bg.mp4");
+    }
   }
 
   @override
@@ -42,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final records = Provider.of<DailyRecordProvider>(context);
+    final poultry = Provider.of<PoultryProvider>(context);
     final user = auth.userModel;
     final isSuperAdmin = auth.isSuperAdmin;
     final isViewAdmin = auth.isViewAdmin;
@@ -133,15 +137,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${records.totalPending} pending approvals across ${ModuleConfig.moduleIds.length} modules',
+                          '${poultry.totalPendingRecords} pending · ${poultry.activeBatches.length} active batches · ${poultry.totalActiveBirds} birds',
                           style: const TextStyle(fontSize: 14, color: Colors.white, fontFamily: 'Poppins'),
                         ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            _QuickStat(label: 'Records', value: '${records.records.length}', color: Colors.white),
-                            _QuickStat(label: 'Pending', value: '${records.totalPending}', color: Colors.white),
-                            _QuickStat(label: 'Modules', value: '${ModuleConfig.moduleIds.length}', color: Colors.white),
+                            _QuickStat(label: 'Pending', value: '${poultry.totalPendingRecords}', color: Colors.white),
+                            _QuickStat(label: 'Modules', value: '${poultry.totalModules}', color: Colors.white),
+                            _QuickStat(label: 'Revenue', value: 'KES ${poultry.totalRevenue.toStringAsFixed(0)}', color: Colors.white),
                           ],
                         ),
                       ],

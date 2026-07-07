@@ -77,8 +77,8 @@ class FlockRegisterScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
         leading: CircleAvatar(backgroundColor: typeColor.withOpacity(0.2), child: Icon(Icons.pets, color: typeColor)),
-        title: Text(b.batchId, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('${b.breed}  |  ${b.birdType}  |  Start: ${b.birdsAtStart}'),
+        title: Text(b.name.isNotEmpty ? b.name : b.batchId, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text('${b.breed}  |  ${b.birdType}  |  ${b.birdsAtStart} birds'),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(

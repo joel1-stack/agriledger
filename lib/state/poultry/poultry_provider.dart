@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/poultry/farm_config.dart';
 import '../../data/models/poultry/flock_batch.dart';
 import '../../data/models/poultry/egg_production.dart';
@@ -22,7 +23,15 @@ class PoultryProvider extends ChangeNotifier {
   final PoultryRepository _repo;
 
   PoultryProvider({PoultryRepository? repo})
-      : _repo = repo ?? PoultryRepository();
+      : _repo = repo ?? PoultryRepository() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        if (_loadedUserId != user.uid) loadAll(user.uid);
+      } else {
+        _loadedUserId = null;
+      }
+    });
+  }
 
   // ── State ────────────────────────────────────────────────────────────────
   FarmConfig? _config;
@@ -92,6 +101,16 @@ class PoultryProvider extends ChangeNotifier {
   double get totalBirdSales => _sales.where((s) => s.saleType == 'Bird Sale').fold(0.0, (sum, s) => sum + s.totalRevenue);
   double get totalOtherIncome => _otherIncome.fold(0.0, (sum, i) => sum + i.total);
   double get totalRevenue => totalEggIncome + totalBirdSales + totalOtherIncome;
+
+  // ── Pending Counts ─────────────────────────────────────────────────────────
+  int get totalPendingRecords =>
+    _production.where((r) => r.status == 'pending').length +
+    _sales.where((r) => r.status == 'pending').length +
+    _feedExpenses.where((r) => r.status == 'pending').length +
+    _vetHealth.where((r) => r.status == 'pending').length +
+    _mortality.where((r) => r.status == 'pending').length;
+
+  int get totalModules => 10;
 
   double get totalFeedCost => _feedExpenses.fold(0.0, (sum, f) => sum + f.totalCost);
   double get totalVetCost => _vetHealth.fold(0.0, (sum, v) => sum + v.cost);

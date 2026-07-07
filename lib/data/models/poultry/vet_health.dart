@@ -10,6 +10,7 @@ class VetHealth {
   final String vetSupplier;
   final double cost;
   final double? cumulative;
+  final String status;
   final DateTime createdAt;
 
   VetHealth({
@@ -22,6 +23,7 @@ class VetHealth {
     required this.vetSupplier,
     required this.cost,
     this.cumulative,
+    this.status = 'pending',
     required this.createdAt,
   });
 
@@ -34,19 +36,21 @@ class VetHealth {
     'vetSupplier': vetSupplier,
     'cost': cost,
     'cumulative': cumulative,
+    'status': status,
     'createdAt': Timestamp.fromDate(createdAt),
   };
 
   factory VetHealth.fromMap(String id, Map<String, dynamic> map) => VetHealth(
     id: id,
-    userId: map['userId'] as String,
-    date: (map['date'] as Timestamp).toDate(),
-    batchId: map['batchId'] as String,
-    birdType: map['birdType'] as String,
-    treatment: map['treatment'] as String,
-    vetSupplier: map['vetSupplier'] as String,
-    cost: (map['cost'] as num).toDouble(),
+    userId: map['userId'] as String? ?? '',
+    date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    batchId: map['batchId'] as String? ?? '',
+    birdType: map['birdType'] as String? ?? '',
+    treatment: map['treatment'] as String? ?? '',
+    vetSupplier: map['vetSupplier'] as String? ?? '',
+    cost: (map['cost'] as num?)?.toDouble() ?? 0,
     cumulative: (map['cumulative'] as num?)?.toDouble(),
-    createdAt: (map['createdAt'] as Timestamp).toDate(),
+    status: map['status'] as String? ?? 'pending',
+    createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
   );
 }

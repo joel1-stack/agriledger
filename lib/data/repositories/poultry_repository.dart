@@ -24,38 +24,38 @@ class PoultryRepository {
 
   // ── Farm Config ──────────────────────────────────────────────────────────
   Stream<FarmConfig?> streamFarmConfig(String userId) {
-    return _db.collection('poultryFarmConfig').doc(userId).snapshots().map(
+    return _db.collection('farmSetup').doc('poultryFarmSetup').snapshots().map(
       (snap) => snap.exists ? FarmConfig.fromMap(snap.id, snap.data()!) : null,
     );
   }
 
   Future<void> saveFarmConfig(FarmConfig config) async {
-    await _db.collection('poultryFarmConfig').doc(config.userId).set(config.toMap());
+    await _db.collection('farmSetup').doc('poultryFarmSetup').set(config.toMap());
   }
 
   // ── Flock Batches ────────────────────────────────────────────────────────
   Stream<List<FlockBatch>> streamBatches(String userId) {
     return _db
-        .collection('poultryBatches')
-        .where('userId', isEqualTo: userId)
+        .collection('flock_batches')
+        .where('recordedBy', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => FlockBatch.fromMap(d.id, d.data())).toList());
   }
 
   Future<void> addBatch(FlockBatch batch) =>
-      _db.collection('poultryBatches').doc(batch.id).set(batch.toMap());
+      _db.collection('flock_batches').doc(batch.id).set(batch.toMap());
 
   Future<void> updateBatch(FlockBatch batch) =>
-      _db.collection('poultryBatches').doc(batch.id).update(batch.toMap());
+      _db.collection('flock_batches').doc(batch.id).update(batch.toMap());
 
   Future<void> deleteBatch(String id) =>
-      _db.collection('poultryBatches').doc(id).delete();
+      _db.collection('flock_batches').doc(id).delete();
 
   // ── Egg Production ──────────────────────────────────────────────────────
   Stream<List<EggProduction>> streamProduction(String userId) {
     return _db
-        .collection('poultryProduction')
+        .collection('egg_production')
         .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots()
@@ -63,15 +63,15 @@ class PoultryRepository {
   }
 
   Future<void> addProduction(EggProduction record) =>
-      _db.collection('poultryProduction').doc(record.id).set(record.toMap());
+      _db.collection('egg_production').doc(record.id).set(record.toMap());
 
   Future<void> deleteProduction(String id) =>
-      _db.collection('poultryProduction').doc(id).delete();
+      _db.collection('egg_production').doc(id).delete();
 
   // ── Sales ────────────────────────────────────────────────────────────────
   Stream<List<PoultrySale>> streamSales(String userId) {
     return _db
-        .collection('poultrySales')
+        .collection('poultry_sales')
         .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots()
@@ -79,34 +79,35 @@ class PoultryRepository {
   }
 
   Future<void> addSale(PoultrySale sale) =>
-      _db.collection('poultrySales').doc(sale.id).set(sale.toMap());
+      _db.collection('poultry_sales').doc(sale.id).set(sale.toMap());
 
   Future<void> updateSale(PoultrySale sale) =>
-      _db.collection('poultrySales').doc(sale.id).update(sale.toMap());
+      _db.collection('poultry_sales').doc(sale.id).update(sale.toMap());
 
   Future<void> deleteSale(String id) =>
-      _db.collection('poultrySales').doc(id).delete();
+      _db.collection('poultry_sales').doc(id).delete();
 
   // ── Other Income ─────────────────────────────────────────────────────────
   Stream<List<OtherIncome>> streamOtherIncome(String userId) {
     return _db
-        .collection('poultryOtherIncome')
+        .collection('poultry_sales')
         .where('userId', isEqualTo: userId)
+        .where('saleType', isEqualTo: 'Other Income')
         .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => OtherIncome.fromMap(d.id, d.data())).toList());
   }
 
   Future<void> addOtherIncome(OtherIncome income) =>
-      _db.collection('poultryOtherIncome').doc(income.id).set(income.toMap());
+      _db.collection('poultry_sales').doc(income.id).set(income.toMap());
 
   Future<void> deleteOtherIncome(String id) =>
-      _db.collection('poultryOtherIncome').doc(id).delete();
+      _db.collection('poultry_sales').doc(id).delete();
 
   // ── Feed Expenses ────────────────────────────────────────────────────────
   Stream<List<FeedExpense>> streamFeedExpenses(String userId) {
     return _db
-        .collection('poultryFeedExpenses')
+        .collection('feed_expenses')
         .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots()
@@ -114,10 +115,10 @@ class PoultryRepository {
   }
 
   Future<void> addFeedExpense(FeedExpense expense) =>
-      _db.collection('poultryFeedExpenses').doc(expense.id).set(expense.toMap());
+      _db.collection('feed_expenses').doc(expense.id).set(expense.toMap());
 
   Future<void> deleteFeedExpense(String id) =>
-      _db.collection('poultryFeedExpenses').doc(id).delete();
+      _db.collection('feed_expenses').doc(id).delete();
 
   // ── Feed Consumption ─────────────────────────────────────────────────────
   Stream<List<FeedConsumption>> streamFeedConsumption(String userId) {
@@ -138,7 +139,7 @@ class PoultryRepository {
   // ── Vet & Health ─────────────────────────────────────────────────────────
   Stream<List<VetHealth>> streamVetHealth(String userId) {
     return _db
-        .collection('poultryVetHealth')
+        .collection('vet_health')
         .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots()
@@ -146,26 +147,27 @@ class PoultryRepository {
   }
 
   Future<void> addVetHealth(VetHealth record) =>
-      _db.collection('poultryVetHealth').doc(record.id).set(record.toMap());
+      _db.collection('vet_health').doc(record.id).set(record.toMap());
 
   Future<void> deleteVetHealth(String id) =>
-      _db.collection('poultryVetHealth').doc(id).delete();
+      _db.collection('vet_health').doc(id).delete();
 
   // ── Mortality ────────────────────────────────────────────────────────────
   Stream<List<MortalityRecord>> streamMortality(String userId) {
     return _db
-        .collection('poultryMortality')
+        .collection('egg_production')
         .where('userId', isEqualTo: userId)
+        .where('recordType', isEqualTo: 'mortality')
         .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => MortalityRecord.fromMap(d.id, d.data())).toList());
   }
 
   Future<void> addMortality(MortalityRecord record) =>
-      _db.collection('poultryMortality').doc(record.id).set(record.toMap());
+      _db.collection('egg_production').doc(record.id).set(record.toMap());
 
   Future<void> deleteMortality(String id) =>
-      _db.collection('poultryMortality').doc(id).delete();
+      _db.collection('egg_production').doc(id).delete();
 
   // ── Housing Expenses ─────────────────────────────────────────────────────
   Stream<List<HousingExpense>> streamHousingExpenses(String userId) {
@@ -271,16 +273,16 @@ class PoultryRepository {
   // ── Dynamic Record Methods (for SheetScreen) ────────────────────────────
 
   static const Map<String, String> _sheetCollections = {
-    'feed': 'poultryFeedExpenses',
-    'mortality': 'poultryMortality',
-    'eggs': 'poultryProduction',
-    'weight': 'poultryProduction',
-    'vet': 'poultryVetHealth',
-    'sales': 'poultrySales',
+    'feed': 'feed_expenses',
+    'mortality': 'egg_production',
+    'eggs': 'egg_production',
+    'weight': 'egg_production',
+    'vet': 'vet_health',
+    'sales': 'poultry_sales',
     'labour': 'poultryLabour',
     'housing': 'poultryHousing',
     'overheads': 'poultryOverheads',
-    'other_income': 'poultryOtherIncome',
+    'other_income': 'poultry_sales',
     'inventory': 'poultryInventory',
     'assets': 'poultryAssets',
   };

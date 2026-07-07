@@ -12,6 +12,7 @@ class MortalityRecord {
   final int cumulativeDeaths;
   final double mortalityRate;
   final String actionTaken;
+  final String status;
   final DateTime createdAt;
 
   MortalityRecord({
@@ -26,6 +27,7 @@ class MortalityRecord {
     required this.cumulativeDeaths,
     required this.mortalityRate,
     required this.actionTaken,
+    this.status = 'pending',
     required this.createdAt,
   });
 
@@ -40,21 +42,23 @@ class MortalityRecord {
     'cumulativeDeaths': cumulativeDeaths,
     'mortalityRate': mortalityRate,
     'actionTaken': actionTaken,
+    'status': status,
     'createdAt': Timestamp.fromDate(createdAt),
   };
 
   factory MortalityRecord.fromMap(String id, Map<String, dynamic> map) => MortalityRecord(
     id: id,
-    userId: map['userId'] as String,
-    date: (map['date'] as Timestamp).toDate(),
-    batchId: map['batchId'] as String,
-    birdType: map['birdType'] as String,
-    birdsAtStart: map['birdsAtStart'] as int,
-    deaths: map['deaths'] as int,
-    causeOfDeath: map['causeOfDeath'] as String,
-    cumulativeDeaths: map['cumulativeDeaths'] as int,
-    mortalityRate: (map['mortalityRate'] as num).toDouble(),
-    actionTaken: map['actionTaken'] as String,
-    createdAt: (map['createdAt'] as Timestamp).toDate(),
+    userId: map['userId'] as String? ?? '',
+    date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    batchId: map['batchId'] as String? ?? '',
+    birdType: map['birdType'] as String? ?? '',
+    birdsAtStart: (map['birdsAtStart'] as num?)?.toInt() ?? 0,
+    deaths: (map['deaths'] as num?)?.toInt() ?? 0,
+    causeOfDeath: map['causeOfDeath'] as String? ?? '',
+    cumulativeDeaths: (map['cumulativeDeaths'] as num?)?.toInt() ?? 0,
+    mortalityRate: (map['mortalityRate'] as num?)?.toDouble() ?? 0,
+    actionTaken: map['actionTaken'] as String? ?? '',
+    status: map['status'] as String? ?? 'pending',
+    createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
   );
 }

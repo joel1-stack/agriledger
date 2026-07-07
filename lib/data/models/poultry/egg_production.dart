@@ -15,6 +15,7 @@ class EggProduction {
   final double trays;
   final int broken;
   final String? notes;
+  final String status;
   final DateTime createdAt;
 
   EggProduction({
@@ -32,6 +33,7 @@ class EggProduction {
     required this.trays,
     this.broken = 0,
     this.notes,
+    this.status = 'pending',
     required this.createdAt,
   });
 
@@ -49,24 +51,26 @@ class EggProduction {
     'trays': trays,
     'broken': broken,
     'notes': notes,
+    'status': status,
     'createdAt': Timestamp.fromDate(createdAt),
   };
 
   factory EggProduction.fromMap(String id, Map<String, dynamic> map) => EggProduction(
     id: id,
-    userId: map['userId'] as String,
-    date: (map['date'] as Timestamp).toDate(),
-    batchId: map['batchId'] as String,
-    flockSize: map['flockSize'] as int,
-    birdType: map['birdType'] as String,
-    morningEggs: map['morningEggs'] as int,
-    afternoonEggs: map['afternoonEggs'] as int,
-    totalEggs: map['totalEggs'] as int,
-    saleableEggs: map['saleableEggs'] as int,
-    henDayPercent: (map['henDayPercent'] as num).toDouble(),
-    trays: (map['trays'] as num).toDouble(),
-    broken: map['broken'] as int? ?? 0,
+    userId: map['userId'] as String? ?? '',
+    date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    batchId: map['batchId'] as String? ?? '',
+    flockSize: (map['flockSize'] as num?)?.toInt() ?? 0,
+    birdType: map['birdType'] as String? ?? '',
+    morningEggs: (map['morningEggs'] as num?)?.toInt() ?? 0,
+    afternoonEggs: (map['afternoonEggs'] as num?)?.toInt() ?? 0,
+    totalEggs: (map['totalEggs'] as num?)?.toInt() ?? 0,
+    saleableEggs: (map['saleableEggs'] as num?)?.toInt() ?? 0,
+    henDayPercent: (map['henDayPercent'] as num?)?.toDouble() ?? 0,
+    trays: (map['trays'] as num?)?.toDouble() ?? 0,
+    broken: (map['broken'] as num?)?.toInt() ?? 0,
     notes: map['notes'] as String?,
-    createdAt: (map['createdAt'] as Timestamp).toDate(),
+    status: map['status'] as String? ?? 'pending',
+    createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
   );
 }
