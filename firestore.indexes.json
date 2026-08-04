@@ -3,26 +3,26 @@
     { "collectionGroup": "transactions", "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "userId",    "order": "ASCENDING"  },
-        { "fieldPath": "timestamp", "order": "DESCENDING" }
+        { "fieldPath": "date", "order": "DESCENDING" }
       ]
     },
     { "collectionGroup": "transactions", "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "businessUnit", "order": "ASCENDING"  },
-        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+        { "fieldPath": "date",    "order": "DESCENDING" }
       ]
     },
     { "collectionGroup": "transactions", "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "type",      "order": "ASCENDING"  },
-        { "fieldPath": "timestamp", "order": "DESCENDING" }
+        { "fieldPath": "date", "order": "DESCENDING" }
       ]
     },
     { "collectionGroup": "transactions", "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "businessUnit", "order": "ASCENDING"  },
         { "fieldPath": "type",         "order": "ASCENDING"  },
-        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+        { "fieldPath": "date",    "order": "DESCENDING" }
       ]
     },
 
@@ -140,14 +140,14 @@
 
     { "collectionGroup": "audit_logs", "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "module",       "order": "ASCENDING"  },
-        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+        { "fieldPath": "module",    "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     },
     { "collectionGroup": "audit_logs", "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "performedBy",  "order": "ASCENDING"  },
-        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+        { "fieldPath": "performedBy", "order": "ASCENDING" },
+        { "fieldPath": "date",    "order": "DESCENDING" }
       ]
     },
 

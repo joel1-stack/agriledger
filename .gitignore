@@ -62,5 +62,27 @@ lib/sum
 # Android build output
 android/build/
 android/.gradle/
+android/.gradle-cache/
 *.apk
 *.aab
+
+# Windows ephemeral / generated
+windows/flutter/ephemeral/
+
+# Build output
+build/
+
+# Dart tool
+.dart_tool/
+
+# Log files
+*.log
+firebase-debug.log
+firebase-debug.*.log
+
+# Documentation / temp files
+agriledger_documentation.txt
+build_apk.ps1
+build_windows.bat
+check_path.bat
+path_check.txt

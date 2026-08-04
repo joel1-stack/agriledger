@@ -38,7 +38,6 @@ class PoultryRepository {
     return _db
         .collection('flock_batches')
         .where('recordedBy', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => FlockBatch.fromMap(d.id, d.data())).toList());
   }
@@ -57,7 +56,6 @@ class PoultryRepository {
     return _db
         .collection('egg_production')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => EggProduction.fromMap(d.id, d.data())).toList());
   }
@@ -73,7 +71,6 @@ class PoultryRepository {
     return _db
         .collection('poultry_sales')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => PoultrySale.fromMap(d.id, d.data())).toList());
   }
@@ -93,7 +90,6 @@ class PoultryRepository {
         .collection('poultry_sales')
         .where('userId', isEqualTo: userId)
         .where('saleType', isEqualTo: 'Other Income')
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => OtherIncome.fromMap(d.id, d.data())).toList());
   }
@@ -109,7 +105,6 @@ class PoultryRepository {
     return _db
         .collection('feed_expenses')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => FeedExpense.fromMap(d.id, d.data())).toList());
   }
@@ -125,7 +120,6 @@ class PoultryRepository {
     return _db
         .collection('poultryFeedConsumption')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => FeedConsumption.fromMap(d.id, d.data())).toList());
   }
@@ -141,7 +135,6 @@ class PoultryRepository {
     return _db
         .collection('vet_health')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => VetHealth.fromMap(d.id, d.data())).toList());
   }
@@ -158,7 +151,6 @@ class PoultryRepository {
         .collection('egg_production')
         .where('userId', isEqualTo: userId)
         .where('recordType', isEqualTo: 'mortality')
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => MortalityRecord.fromMap(d.id, d.data())).toList());
   }
@@ -174,7 +166,6 @@ class PoultryRepository {
     return _db
         .collection('poultryHousing')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => HousingExpense.fromMap(d.id, d.data())).toList());
   }
@@ -190,7 +181,6 @@ class PoultryRepository {
     return _db
         .collection('poultryLabour')
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => LabourRecord.fromMap(d.id, d.data())).toList());
   }
@@ -206,7 +196,6 @@ class PoultryRepository {
     return _db
         .collection('poultryOverheads')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => OverheadExpense.fromMap(d.id, d.data())).toList());
   }
@@ -222,7 +211,6 @@ class PoultryRepository {
     return _db
         .collection('poultryMonthlySummary')
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => MonthlySummary.fromMap(d.id, d.data())).toList());
   }
@@ -256,7 +244,6 @@ class PoultryRepository {
     return _db
         .collection('poultryAssets')
         .where('userId', isEqualTo: userId)
-        .orderBy('datePurchased', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => AssetItem.fromMap(d.id, d.data())).toList());
   }

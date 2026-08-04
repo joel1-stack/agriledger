@@ -102,7 +102,7 @@ service cloud.firestore {
 
     match /daily_records/{docId} {
       allow read: if isAuthenticated()
-        && (isAdmin() || resource.data.recordedBy == request.auth.uid || isAssignedToUnit(resource.data.unitId));
+        && (isAdmin() || resource.data.recordedBy == request.auth.uid);
 
       allow create: if isAuthenticated()
         && (isAdmin() || isGeneralUser())
@@ -299,6 +299,38 @@ service cloud.firestore {
     match /poultryMonthlySummary/{docId} {
       allow read: if canRead();
       allow write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // POULTRY MODULE COLLECTIONS (Mobile app)
+    // =========================================================================
+
+    match /farmSetup/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /poultryFeedConsumption/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /poultryHousing/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /poultryLabour/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /poultryOverheads/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /poultryInventory/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /poultryAssets/{docId} {
+      allow read, write: if isAuthenticated();
     }
 
     match /analytics/{analyticsId} {

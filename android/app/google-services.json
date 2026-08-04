@@ -12,7 +12,12 @@
           "package_name": "com.example.agri_ledger"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "522942087181-clnrv6q0j1icoq4eig2ub26bdhkn32fb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB0wr-26_FkOrLUcxjeYoAKHH43-htGoyw"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "522942087181-clnrv6q0j1icoq4eig2ub26bdhkn32fb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "522942087181-q1tso2c2u88o50728ko3qhddiggqm3v7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.agriLedger"
+              }
+            }
+          ]
         }
       }
     }
